@@ -424,6 +424,15 @@
   #evalbar.pulse { animation: ebPulse .7s ease-out; }
   @keyframes ebPulse { 0% { transform: translateX(-50%) scale(1.12); filter: brightness(1.8); } 100% { transform: translateX(-50%) scale(1); } }
 
+  #perftip {
+    position: fixed; left: 50%; bottom: 110px; transform: translateX(-50%); z-index: 99; max-width: min(720px, calc(100% - 24px));
+    padding: 10px 36px 10px 14px; border-radius: 10px; background: rgba(20,14,8,.94); border: 1px solid #a8741a; color: #f5e6c8;
+    font: 400 12px/1.6 'Noto Sans JP', sans-serif; box-shadow: 0 6px 20px rgba(0,0,0,.5);
+  }
+  #perftip code { font: 700 11px 'Noto Sans JP', sans-serif; color: #ffd24a; }
+  #perftip button { position: absolute; top: 6px; right: 8px; background: none; border: 0; color: #ccc; font-size: 14px; cursor: pointer; }
+  body.ui-hidden #perftip, body.spinning #perftip { display: none; }
+
   #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font: 700 16px sans-serif; z-index: 100; background: #000; }
   #loading.err { color: #fca5a5; padding: 24px; text-align: center; line-height: 1.7; }
 </style>
@@ -2635,6 +2644,36 @@ $('btn-sound').addEventListener('click', () => {
   $('sound-label').textContent = sound.enabled ? '効果音 ON' : '効果音 OFF';
 });
 $('btn-hide').addEventListener('click', () => document.body.classList.toggle('ui-hidden'));
+/* ---------- 重さの診断: ブラウザ側の設定で重くなっているときだけ、直し方を出す(画質は下げない) ---------- */
+function checkPerf() {
+  let soft = false;
+  try {
+    const gl = renderer.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info');
+    const name = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : '';
+    soft = /swiftshader|basic render|llvmpipe|software/i.test(name);
+  } catch (_) { /* 取れなくても続行 */ }
+  if (soft) return showPerfTip('soft');
+  // 待機中のコマ数を4秒数える(起動直後は文字の準備で一時的に落ちるので、10秒待ってから)。40未満なら省エネモードなどの制限
+  setTimeout(() => {
+    if (isSpinning || document.hidden) return;
+    let n = 0; const t0 = performance.now();
+    const count = (t) => { n++; if (t - t0 < 4000) requestAnimationFrame(count); else if (n / 4 < 40 && !isSpinning && !document.hidden) showPerfTip('slow'); };
+    requestAnimationFrame(count);
+  }, 10000);
+}
+function showPerfTip(kind) {
+  try { if (localStorage.getItem('perfTipHidden')) return; } catch (_) { /* 同上 */ }
+  const el = document.createElement('div');
+  el.id = 'perftip';
+  el.innerHTML = kind === 'soft'
+    ? '<b>動きが重いときは</b>：ブラウザのグラフィック アクセラレーションがオフになっています。Chrome なら <code>設定 → システム →「グラフィック アクセラレーションが使用可能な場合は使用する」</code> をオンにして再起動してください。'
+    : '<b>動きが重いときは</b>：ブラウザの省エネ機能でコマ数が制限されているかもしれません。Chrome なら <code>設定 → パフォーマンス →「省エネモード」</code> をオフ、またはグラフィック アクセラレーションをオンにしてください。';
+  const x = document.createElement('button'); x.textContent = '✕'; x.title = '今後表示しない';
+  x.onclick = () => { el.remove(); try { localStorage.setItem('perfTipHidden', '1'); } catch (_) { /* 同上 */ } };
+  el.appendChild(x);
+  document.body.appendChild(el);
+}
+
 /* ---------- 設定パネル: 入力欄から離れたとき・画像を変えたときに自動で保存して盤に反映 ---------- */
 let editImg = null;           // パネルで扱っている画像(保存前でも表示用)
 function openSettings() {
@@ -2857,6 +2896,7 @@ document.addEventListener('touchend', (e) => {
   camTarget(camPos, camLook);
   $('loading').remove();
   requestAnimationFrame(frame);
+  checkPerf();
 })();
 </script>
 <script>
