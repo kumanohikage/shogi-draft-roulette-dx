@@ -382,6 +382,7 @@
   .st-imgops button { padding: 5px 8px; border-radius: 7px; border: 1px solid #a8741a; background: #2a1f14; color: #f5e6c8; cursor: pointer; font: 700 12px 'Noto Sans JP', sans-serif; }
   .st-or { font-size: 11px; color: #a89070; font-weight: 400; }
   .st-imgops input { margin-top: 0 !important; font-size: 12px !important; }
+  #st-obs { margin: 4px 0 2px; padding: 8px 10px; border-radius: 8px; background: rgba(255,210,74,.12); border: 1px solid #a8741a; color: #ffd98a; font: 700 12px/1.6 'Noto Sans JP', sans-serif; }
   #st-msg { min-height: 1.2em; color: #ff9a8a; font-size: 12px; }
   .st-saved { font-size: 11px; color: #9fd89f; text-align: right; min-height: 1.2em; }
   .st-save { width: 100%; padding: 11px 0; border-radius: 10px; border: 0; cursor: pointer; color: #fff; font: 900 15px 'Noto Sans JP', sans-serif; background: linear-gradient(#f59e0b, #ea580c); }
@@ -511,6 +512,7 @@
 <div id="settings" class="hidden">
   <div class="st-card">
     <div class="st-head"><b>⚙ 抽選の設定</b><button id="st-close" aria-label="閉じる">✕</button></div>
+    <div id="st-obs" hidden>OBS の「操作」画面では日本語入力ができません。名前はメモ帳などで入力してコピーし、ここに Ctrl+V で貼り付けてください。</div>
     <label class="st-row">指名者（重複した棋士）<input id="st-pick" type="text" maxlength="24" placeholder="例：〇〇六段"></label>
     <label class="st-row">競合したリーダー（1行に1人・2〜8人）<textarea id="st-leaders" rows="4" placeholder="例：&#10;〇〇九段&#10;△△八段"></textarea></label>
     <div class="st-row">指名者の画像（任意・盤の真ん中に丸く出ます）
@@ -2774,6 +2776,8 @@ function showPerfTip(kind) {
 
 /* ---------- 設定パネル: 入力欄から離れたとき・画像を変えたときに自動で保存して盤に反映 ---------- */
 let editImg = null;           // パネルで扱っている画像(保存前でも表示用)
+// OBS のブラウザソース内(window.obsstudio がある)では、日本語入力できない旨を出す
+if (window.obsstudio) $('st-obs').hidden = false;
 function openSettings() {
   if (isSpinning) return;
   closeResult();
