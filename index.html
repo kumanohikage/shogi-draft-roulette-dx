@@ -85,9 +85,9 @@
   body.evaling #matchup, body.evaling header { opacity: 0 !important; pointer-events: none; }
   #matchup {
     position: absolute; top: 64px; left: 50%; transform: translateX(-50%); max-width: calc(100% - 32px);
-    padding: 8px 20px; border-radius: 14px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    padding: 6px 24px 7px; border-radius: 14px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     background: linear-gradient(180deg, #fff7d6, #fcd34d); border: 2px solid #f59e0b; color: #4a2a05;
-    box-shadow: 0 0 24px rgba(251, 191, 36, .6); font-family: var(--heavy); font-size: 18px; letter-spacing: .04em;
+    box-shadow: 0 0 24px rgba(251, 191, 36, .6); font-family: var(--heavy); font-size: 28px; line-height: 1.15; letter-spacing: .04em;
     transition: opacity .3s;
   }
   #matchup small { display: block; font: 700 11px 'Noto Sans JP', sans-serif; margin-top: 2px; opacity: .85; letter-spacing: 0; }
@@ -230,7 +230,9 @@
   .cutin .main.gl { background: none; -webkit-text-stroke: 0; filter: none; }
   .cutin .main.gl .glw { width: min(calc(86 * var(--vw)), calc(var(--ar, 4) * 26 * var(--vh))); }
   /* 全回転などの特別なカットインは、光と闇と同じく画面いっぱいの大きさで */
-  .cutin.huge .main.gl .glw { width: calc(72 * var(--vw)); }
+  .cutin.huge .main.gl .glw { width: min(calc(54 * var(--vw)), calc(var(--ar, 4) * 40 * var(--vh))); }
+  /* 短い言葉(激熱など)を大きく見せる */
+  .cutin.big .main.gl .glw { width: min(calc(86 * var(--vw)), calc(var(--ar, 4) * 40 * var(--vh))); }
   .cutin.small .main.gl .glw { width: min(calc(60 * var(--vw)), calc(var(--ar, 4) * 13 * var(--vh))); }
   .cutin .main.gl .glw canvas { filter: drop-shadow(0 0 22px var(--glow)); }
   #result-text.gl, #result.end #result-text.gl, body.mode-dark #result.end #result-text.gl { background: none; -webkit-text-stroke: 0; filter: none; }
@@ -273,7 +275,8 @@
   body.vertical .cutin .main { font-size: calc(19 * var(--vw)); }
   body.vertical .cutin.small .main { font-size: calc(15 * var(--vw)); }
   body.vertical .cutin .main.gl .glw { width: min(calc(96 * var(--vw)), calc(var(--ar, 4) * 24 * var(--vw))); }
-  body.vertical .cutin.huge .main.gl .glw { width: calc(96 * var(--vw)); }
+  body.vertical .cutin.huge .main.gl .glw { width: calc(86 * var(--vw)); }
+  body.vertical .cutin.big .main.gl .glw { width: min(calc(96 * var(--vw)), calc(var(--ar, 4) * 36 * var(--vw))); }
   body.vertical .cutin.small .main.gl .glw { width: min(calc(90 * var(--vw)), calc(var(--ar, 4) * 17 * var(--vw))); }
   body.vertical .cutin .band { height: calc(24 * var(--vh)); margin-top: calc(-12 * var(--vh)); }
   body.vertical .cutin.small .band { height: calc(14 * var(--vh)); margin-top: calc(-7 * var(--vh)); }
@@ -474,6 +477,32 @@
   body.ui-hidden #perftip, body.spinning #perftip { display: none; }
 
   #safe-probe { position: fixed; bottom: 0; height: 0; padding-bottom: env(safe-area-inset-bottom, 0px); visibility: hidden; pointer-events: none; }
+  /* 演出確認モード(?preview) */
+  #pv-badge {
+    position: fixed; top: 52px; left: 16px; z-index: 90; pointer-events: none;
+    padding: 4px 14px; border-radius: 10px; background: #c00; color: #fff;
+    font: 900 13px 'Noto Sans JP', sans-serif; letter-spacing: .08em; box-shadow: 0 2px 10px rgba(0,0,0,.5);
+  }
+  #pv {
+    position: fixed; right: 10px; top: 50%; transform: translateY(-50%); z-index: 80; width: 270px; max-height: calc(100% - 60px); overflow: auto;
+    padding: 10px 12px; border-radius: 12px; background: rgba(10,10,18,.88); border: 1px solid rgba(255,255,255,.2);
+    color: #eee; font: 700 12px 'Noto Sans JP', sans-serif; box-shadow: 0 6px 30px rgba(0,0,0,.6);
+  }
+  #pv.min > :not(.pv-head) { display: none; }
+  #pv .pv-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 13px; }
+  #pv .pv-head button { background: none; border: 0; color: #aaa; cursor: pointer; font-size: 14px; }
+  #pv label { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 5px 0; }
+  #pv label.off { opacity: .35; pointer-events: none; }
+  #pv select, #pv input[type=number] { width: 140px; font: 700 12px 'Noto Sans JP', sans-serif; background: #222; color: #fff; border: 1px solid #555; border-radius: 6px; padding: 3px 4px; }
+  #pv input[type=number] { width: 56px; }
+  #pv .seg { display: flex; gap: 4px; }
+  #pv .seg button { flex: 1; padding: 6px 0; border-radius: 7px; border: 1px solid #555; background: #222; color: #ccc; font: 900 12px 'Noto Sans JP', sans-serif; cursor: pointer; }
+  #pv .seg button.on { background: #b91c1c; border-color: #fca5a5; color: #fff; }
+  #pv .seg button.on.cont { background: #1d4ed8; border-color: #93c5fd; }
+  #pv hr { border: 0; border-top: 1px solid rgba(255,255,255,.15); margin: 8px 0; }
+  #pv .go { width: 100%; margin-top: 8px; padding: 9px 0; border-radius: 9px; border: 0; cursor: pointer; font: 900 15px 'Noto Sans JP', sans-serif; color: #fff; background: linear-gradient(#f59e0b, #ea580c); }
+  #pv .note { font-weight: 400; font-size: 10.5px; color: #aaa; line-height: 1.5; margin-top: 6px; }
+
   #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font: 700 16px sans-serif; z-index: 100; background: #000; }
   #loading.err { color: #fca5a5; padding: 24px; text-align: center; line-height: 1.7; }
 </style>
@@ -916,7 +945,7 @@ const GLOSS = {
 const glossCache = new Map();
 function renderGlossy(text, scheme) {
   const g = GLOSS[scheme] || GLOSS.gold;
-  const fs = 180, k = fs / 160, n = [...text].length;
+  const fs = 280, k = fs / 160, n = [...text].length;   // 大きく表示しても荒れない解像度
   const W = Math.round(n * fs + 120 * k), H = Math.round(fs * 1.62);
   const x = W / 2, y = Math.round(fs * 1.12);
   const top = y - fs * 0.9, bot = y + fs * 0.12;
@@ -936,8 +965,9 @@ function renderGlossy(text, scheme) {
     if (masks[w]) return masks[w];
     const [c2, x2] = layer();
     x2.fillStyle = '#fff';
-    const r = w / 2, steps = 28;
-    for (const rr of [r, r * 0.7, r * 0.4]) for (let i = 0; i < steps; i++) {
+    // 円周上に隙間なく並べる(間隔が空くと縁がギザギザになる)
+    const r = w / 2;
+    for (const rr of [r, r * 0.66, r * 0.33]) for (let i = 0, steps = Math.max(16, Math.ceil(TAU * rr / 1.2)); i < steps; i++) {
       const a = (i / steps) * TAU;
       x2.fillText(text, x + Math.cos(a) * rr, y + Math.sin(a) * rr);
     }
@@ -954,7 +984,7 @@ function renderGlossy(text, scheme) {
 
   // 厚み(押し出し)
   const extC = colored(40 * k, g.ext);
-  for (let i = 10; i >= 1; i--) ctx.drawImage(extC, 0, i * 2.6 * k);
+  for (let i = 26; i >= 1; i--) ctx.drawImage(extC, 0, i * 1 * k);   // 細かく重ねて段差を出さない
   // 外側の黒縁 → メッキの縁
   ctx.drawImage(colored(40 * k, '#0a0300'), 0, 0);
   ctx.drawImage(colored(30 * k, (cx) => vgrad(cx, g.rim)), 0, 0);
@@ -1015,7 +1045,7 @@ function renderGlossy(text, scheme) {
 }
 // Webフォントは文字ごとに分割して配信されるので、canvas で使う文字がまだ届いていないことがある。
 // 届いていないときは代わりのフォントで描くだけにして覚えず、文字を取り寄せる(次からは正しいフォントで描く)
-const GLOSS_FONT = `180px 'Dela Gothic One'`;
+const GLOSS_FONT = `280px 'Dela Gothic One'`;
 function getGlossy(text, scheme) {
   const key = `${text}|${scheme}`;
   if (glossCache.has(key)) return glossCache.get(key);
@@ -1650,9 +1680,9 @@ function phiFor(aT, from, minTurns) {
 
 /* ---------- DOM 演出 ---------- */
 const fxLayer = $('fx');
-function cutin(text, cls, { dur = 1400, sub = '', small = false, gloss = null, ghost = false, color = null, huge = false } = {}) {
+function cutin(text, cls, { dur = 1400, sub = '', small = false, gloss = null, ghost = false, color = null, huge = false, big = false } = {}) {
   const el = document.createElement('div');
-  el.className = `cutin ${cls}${small ? ' small' : ''}${huge ? ' huge' : ''}`;
+  el.className = `cutin ${cls}${small ? ' small' : ''}${huge ? ' huge' : ''}${big ? ' big' : ''}`;
   if (color) {
     const c = new THREE.Color(color), hi = `#${c.clone().lerp(new THREE.Color('#fff'), 0.35).getHexString()}`, lo = `#${c.clone().multiplyScalar(0.45).getHexString()}`;
     el.style.setProperty('--band', `linear-gradient(180deg, ${hi}, ${color} 50%, ${lo})`);
@@ -1948,10 +1978,11 @@ async function startSpin() {
   const arc = TAU / total;
 
   // ===== 抽選(本体): リーダー人数から一様に1人 =====
-  const winner = Math.floor(Math.random() * n);
+  // 通常は普通の抽選。?preview(演出確認モード)のときだけ、パネルで選んだ人を勝者にする
+  const winner = PREVIEW ? previewWinner(n) : Math.floor(Math.random() * n);
 
   // ===== ここから下は演出だけ。winner は二度と書き換えない =====
-  const plan = planDraft(winner, n);
+  const plan = PREVIEW ? previewPlan(winner, n) : planDraft(winner, n);
   evalReset(n);
   // 止まるマス: 勝者のマスのどれか
   const landIdx = winner + n * Math.floor(Math.random() * (total / n));
@@ -2234,7 +2265,8 @@ async function runReach(plan, mode, entryIdx, landAngle, prelude, winner) {
   }
   const winIndex = entryIdx; // 針が最後に越える境目(このマスの入口)
   const phi0 = phi, Ta = 0.7;
-  const holdGap = 0.5;
+  // 境目フリーズはリーチの時点で境目ギリギリまで迫って止める(あとからもう一度近づかない)
+  const holdGap = plan.donden ? rand(0.015, 0.04) : 0.5;
   const creepDist = 1.3 * arc;
   const Tc = 3.2, Td = 4.3;
   const phiB = phiFor(winIndex * arc, phi0 + creepDist + holdGap * arc, 5); // 境目が針に来る φ
@@ -2289,7 +2321,7 @@ async function runReach(plan, mode, entryIdx, landAngle, prelude, winner) {
     stepsN = Math.max(heats.length, leads.length);
   }
   showReach(at(0), 1600, false);
-  if (plan.gekiatsu) setTimeout(() => cutin('激熱', 't-red', { dur: 1150, small: true, gloss: 'red' }), 1650);
+  if (plan.gekiatsu) setTimeout(() => cutin('激熱', 't-red', { dur: 1300, gloss: 'red', big: true }), 1650);
 
   // リーチ中: 宝石の変化と、帯の変化(熱さの昇格・指す人の寝返り)
   const during = (async () => {
@@ -2307,7 +2339,7 @@ async function runReach(plan, mode, entryIdx, landAngle, prelude, winner) {
   await mainDone;
   await during;
   fx.bulb = 'hold';
-  tremble = Math.min(0.12 * arc, 0.01);
+  tremble = Math.min(0.12 * arc, 0.01, holdGap * arc * 0.4);   // 境目ギリギリのときは震えで越えないように
 
   // リーチ中のフリーズ(確定) / 全回転への移行
   if (plan.reachFreeze || plan.reachZenkai) {
@@ -2338,17 +2370,12 @@ async function runReach(plan, mode, entryIdx, landAngle, prelude, winner) {
 
   if (plan.donden) {
     // 境目フリーズ: 2人の境目ギリギリで止まりかけ → 暗転・無音で震える(どっちだ…!?) → どちらかに決まる
-    const edge = phiB - rand(0.015, 0.04) * arc;   // 境目の手前ギリギリ(手前の人のマス)
-    // 迫りながら、針の先へ吸い込まれるようにカメラが寄っていく(お、お、おーー…)
-    fx.edgeK = 0; fx.edgeT = 0.55; fx.edgeRate = 0.7;
-    sound.swell(3.4);
-    await play([{ dur: 2.8, p0: phiHold, p1: edge, ease: E.outCubic }]);
-    sound.stopThud();
-    fx.edgeT = 1; fx.edgeRate = 1.6;
-    await sleep(250);
+    const edge = phiHold;   // リーチの時点で境目ギリギリに止まっている
+    // 無音のまま、針の先へ吸い込まれるようにカメラが寄る
+    fx.edgeK = 0; fx.edgeT = 1; fx.edgeRate = 1.4;
+    await sleep(900);
     fx.bulb = 'off'; fx.dimT = 0.85; fx.ambientRate = 0; vignette(null, false);
-    sound.freeze();
-    tremble = 0.012 * arc;
+    tremble = 0.012 * arc;   // 無音のまま震える
     await sleep(2000);
     tremble = 0;
     sound.gata(); flash('#fff', 0.5, 1); fx.shake = 1.3; fx.dimT = 0; fx.bulb = 'reach';
@@ -2793,7 +2820,85 @@ let editImg = null;           // パネルで扱っている画像(保存前で�
 // OBS のブラウザソース内(window.obsstudio がある)では、日本語入力できない旨を出す
 if (window.obsstudio) $('st-obs').hidden = false;
 // バージョン(本番に出すたびに上げる)。確認用(/dev/)では目印を出す
-const VERSION = '1.0.0';
+/* ---------------------------------------------------------------------
+ *  演出確認モード(URL に ?preview)。勝者と演出を選んで回せる
+ * ------------------------------------------------------------------- */
+const PREVIEW = new URLSearchParams(location.search).has('preview');
+function previewWinner(n) {
+  const v = $('pv-win').value;
+  return v === 'rand' ? Math.floor(Math.random() * n) : Math.min(n - 1, +v);
+}
+function buildPreviewPanel() {
+  document.title = '【演出確認】' + document.title;
+  document.body.insertAdjacentHTML('beforeend', `<div id="pv-badge">演出確認モード（抽選なし）</div>
+<div id="pv">
+  <div class="pv-head"><span>🎬 演出を選んで回す</span><button id="pv-min" title="たたむ">▁</button></div>
+  <label>勝者 <select id="pv-win"></select></label>
+  <label>種類 <select id="pv-kind">
+    <option value="reach">リーチ</option><option value="edge">境目フリーズ</option><option value="restart">再抽選</option>
+    <option value="rfreeze">リーチ中フリーズ</option><option value="rzenkai">リーチから全回転</option><option value="zenkai">全回転</option>
+    <option value="ippatsu">一発決着</option><option value="random">おまかせ</option></select></label>
+  <label data-r>リーチの熱さ <select id="pv-heat"><option value="normal">通常</option><option value="gold">金</option><option value="zebra">ゼブラ</option><option value="rainbow">虹</option></select></label>
+  <label data-r>帯が指す人 <select id="pv-lead"><option value="auto">おまかせ(本番と同じ)</option><option value="win">勝者</option><option value="other">別の人</option><option value="flip">別の人→勝者(寝返り)</option></select></label>
+  <label data-r>昇格 <select id="pv-up"><option value="0">なし</option><option value="1">通常から昇格</option></select></label>
+  <hr>
+  <label data-r>振り駒の「と」 <select id="pv-furi"><option value="-1">なし</option><option>0</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+  <label data-r>ステップアップ <input type="number" id="pv-steps" min="0" max="8" value="4"></label>
+  <label data-r>擬似連 <input type="number" id="pv-pseudo" min="0" max="3" value="1"></label>
+  <label data-r>駒群予告 <input type="checkbox" id="pv-swarm"></label>
+  <label data-r>役物落下 <input type="checkbox" id="pv-gim"></label>
+  <label data-r>激熱 <input type="checkbox" id="pv-geki" checked></label>
+  <label data-r>PUSH <input type="checkbox" id="pv-push"></label>
+  <label data-r>連打 <input type="checkbox" id="pv-mash"></label>
+  <label data-r>ブルブル <input type="checkbox" id="pv-vibe"></label>
+  <button class="go" id="pv-go">この内容で回す</button>
+  <div class="note">「おまかせ」は本番と同じ配分で演出だけ抽選します。Space でも回せます。<br>URL の ?preview を外すと通常に戻ります。</div>
+</div>`);
+  const fillWin = () => {
+    const cur = $('pv-win').value;
+    $('pv-win').innerHTML = '<option value="rand">ランダム</option>' + draft.leaders.map((nm, i) => `<option value="${i}"></option>`).join('');
+    [...$('pv-win').options].slice(1).forEach((o, i) => { o.textContent = draft.leaders[i]; });
+    if ([...$('pv-win').options].some((o) => o.value === cur)) $('pv-win').value = cur;
+  };
+  const refresh = () => {
+    fillWin();
+    const k = $('pv-kind').value;
+    const reachy = ['reach', 'edge', 'restart', 'rfreeze', 'rzenkai'].includes(k);
+    document.querySelectorAll('#pv [data-r]').forEach((l) => l.classList.toggle('off', !reachy));
+  };
+  $('pv-min').addEventListener('click', () => $('pv').classList.toggle('min'));
+  $('pv').addEventListener('change', refresh);
+  $('pv').addEventListener('focusin', fillWin);
+  $('pv-go').addEventListener('click', () => { if (pushResolve) pushResolve(); else if ($('result').classList.contains('show')) closeResult(); else startSpin(); });
+  $('pv').addEventListener('keydown', (e) => e.stopPropagation());
+  refresh();
+}
+function previewPlan(winner, n) {
+  const v = (id) => $(id).value, on = (id) => $(id).checked;
+  const kind = v('pv-kind');
+  if (kind === 'random') {
+    // 全回転の回数カウントは本番用なので、確認モードでは動かさない
+    const keep = zenkaiCount; const p = planDraft(winner, n); zenkaiCount = keep;
+    try { localStorage.setItem(ZENKAI_KEY, String(keep)); } catch (_) { /* 保存できない環境でも動く */ }
+    return p;
+  }
+  if (kind === 'zenkai') return zenkaiPlan();
+  if (kind === 'ippatsu') return { ...zenkaiPlan(), zenkaiten: false, ippatsu: true, heat: 'normal', heatPath: ['normal'] };
+  const other = () => { let i; do { i = Math.floor(Math.random() * n); } while (i === winner && n > 1); return i; };
+  const heat = v('pv-heat');
+  const lead = v('pv-lead');
+  const leads = lead === 'auto' ? [chance(REACH_REL[heat]) ? winner : other()] : lead === 'win' ? [winner] : lead === 'other' ? [other()] : [other(), winner];
+  const pseudo = Array.from({ length: +v('pv-pseudo') }, () => (chance(SIGN_REL) ? winner : other()));
+  return {
+    freeze: false, restart: kind === 'restart', heat, heatPath: v('pv-up') === '1' && heat !== 'normal' ? ['normal', heat] : [heat], leads,
+    pattern: pickW({ straight: 35, short: 30, revive: 35 }), steps: +v('pv-steps'), pseudo,
+    swarm: on('pv-swarm'), gemLead: winner, vibe: on('pv-vibe'), gimmick: on('pv-gim'), gekiatsu: on('pv-geki') && heat !== 'rainbow',
+    push: on('pv-push') || on('pv-mash'), mash: on('pv-mash'), gemEvents: [], furigoma: +v('pv-furi'),
+    reachFreeze: kind === 'rfreeze', reachZenkai: kind === 'rzenkai', donden: kind === 'edge',
+  };
+}
+
+const VERSION = '1.1.0';
 const IS_DEV = /\/dev\/?$/.test(location.pathname.replace(/index\.html$/, ''));
 $('st-ver').textContent = `v${VERSION}${IS_DEV ? '（確認用）' : ''}`;
 if (IS_DEV) {
@@ -3006,6 +3111,7 @@ document.addEventListener('touchend', (e) => {
   await loadDraftImage();
   setMode('light', true);
   warmGlossy();
+  if (PREVIEW) buildPreviewPanel();
   resize();
   camTarget(camPos, camLook);
   $('loading').remove();
