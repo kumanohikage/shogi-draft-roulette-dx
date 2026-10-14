@@ -82,5 +82,6 @@
 
 - 制作: 熊乃ヒカゲ（[@kumanohikage](https://x.com/kumanohikage)） with Claude
 - 姉妹作: [光と闇のルーレットDX](https://github.com/kumanohikage/hikari-yami-roulette-dx)
+- ドラフト会議をまるごと進行するアプリ版（試作中）: [将棋ドラフト会議アプリ](https://github.com/kumanohikage/shogi-draft-app)
 - 3D描画: [three.js](https://threejs.org/)（MIT License）
 - フォント: [Dela Gothic One](https://fonts.google.com/specimen/Dela+Gothic+One)、[Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP)（SIL Open Font License）
