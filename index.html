@@ -56,8 +56,8 @@
   body.ui-hidden #ui { opacity: 0; pointer-events: none; }
   body.ui-hidden #ui > * { pointer-events: none; }
   /* スピン中は UI をフェードで消す(結果が出たら戻る) */
-  body.spinning #ui { opacity: 0; pointer-events: none; }
-  body.spinning #ui > * { pointer-events: none; }
+  body.spinning #ui, body.result-open #ui { opacity: 0; pointer-events: none; }
+  body.spinning #ui > *, body.result-open #ui > * { pointer-events: none; }
   /* リーチ中は UI をフェードで消し、終わったらフェードで戻す */
   body.reaching #ui { opacity: 0; pointer-events: none; transition: opacity .6s; }
   body.reaching #ui > * { pointer-events: none; }
@@ -415,7 +415,9 @@
   #evalbar .eb-val { font: normal 22px var(--heavy); text-shadow: 0 0 8px rgba(255,255,255,.5); }
   #evalbar .eb-word { font: 900 14px 'Noto Sans JP', sans-serif; padding: 1px 9px; border-radius: 99px; background: rgba(255,255,255,.18); }
   #evalbar .eb-word.w2 { background: #c98a00; } #evalbar .eb-word.w3 { background: #d4380d; } #evalbar .eb-word.w4 { background: #b0001e; }
-  #evalbar .eb-word.mate { background: linear-gradient(90deg,#ff3b3b,#ffcc00,#4dff6a,#33d6ff,#8a6bff,#ff4de6); color: #000; }
+  /* 決着は将棋盤まわりの白黒で落ち着いて見せる(詰み=白地に墨、勝ち=墨地に白) */
+  #evalbar .eb-word.mate { background: #f4efe4; color: #111; letter-spacing: .15em; }
+  #evalbar .eb-word.win { background: #111; color: #fff; border: 1px solid #f4efe4; letter-spacing: .15em; }
   #evalbar .eb-track { display: flex; height: 16px; margin-top: 5px; border-radius: 8px; overflow: hidden; background: #222; box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
   #evalbar .eb-track > i { display: block; height: 100%; transition: flex-grow .9s cubic-bezier(.2,.8,.2,1); position: relative; }
   #evalbar .eb-track > i + i { box-shadow: -2px 0 0 #fff; }
@@ -1688,7 +1690,7 @@ function renderEval(pulse) {
   [...track.children].forEach((seg, i) => { seg.style.flexGrow = Math.max(0.0001, P[i]); });
   const name = bar.querySelector('.eb-name'), val = bar.querySelector('.eb-val'), word = bar.querySelector('.eb-word');
   let v = 0, w = '互角', c = '';
-  if (evalSt.won) { w = '勝ち'; c = 'mate'; }
+  if (evalSt.won) { w = '勝ち'; c = 'win'; }
   else if (evalSt.mate >= 0) { w = '詰み'; c = 'mate'; }
   else {
     v = Math.round(600 * Math.log(Math.max(p1, 1e-9) / Math.max(p2, 1e-9)) / 10) * 10;
@@ -2238,12 +2240,14 @@ function showResult(winner) {
   res.classList.add('end');
   t.style.animation = 'none'; void t.offsetWidth; t.style.animation = '';
   res.classList.add('show');
+  document.body.classList.add('result-open');   // 結果の間は UI を隠す(閉じたら戻る)
 }
 function closeResult() {
   const res = $('result');
   if (!res.classList.contains('show')) return;
   evalHide();
   res.classList.remove('show');
+  document.body.classList.remove('result-open');
   fx.winT = 0; fx.bulb = 'idle'; fx.cam = 'base'; fx.faceGlowT = 1; fx.ambientRate = AMB_IDLE;
   removeZenOverlay();
   setHold('none');
