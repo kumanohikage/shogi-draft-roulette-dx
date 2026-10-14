@@ -909,18 +909,38 @@ function renderGlossy(text, scheme) {
   const layer = () => { const c = makeCanvas(W, H), cx = c.getContext('2d'); setFont(cx); return [c, cx]; };
   const setFont = (cx) => { cx.font = `${fs}px 'Dela Gothic One', 'Noto Sans JP', sans-serif`; cx.textAlign = 'center'; cx.textBaseline = 'alphabetic'; cx.lineJoin = 'round'; cx.miterLimit = 2; };
   const [C, ctx] = layer();
+  // 太い縁取りは strokeText を使わず、文字を円周上にずらして塗り重ねて作る
+  // (iPhone Safari の strokeText は角がトゲトゲに飛び出すため)
+  const masks = {};
+  const dilate = (w) => {
+    if (masks[w]) return masks[w];
+    const [c2, x2] = layer();
+    x2.fillStyle = '#fff';
+    const r = w / 2, steps = 28;
+    for (const rr of [r, r * 0.7, r * 0.4]) for (let i = 0; i < steps; i++) {
+      const a = (i / steps) * TAU;
+      x2.fillText(text, x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+    }
+    x2.fillText(text, x, y);
+    return (masks[w] = c2);
+  };
+  const colored = (w, style) => {
+    const [c2, x2] = layer();
+    x2.drawImage(dilate(w), 0, 0);
+    x2.globalCompositeOperation = 'source-in';
+    x2.fillStyle = typeof style === 'function' ? style(x2) : style; x2.fillRect(0, 0, W, H);
+    return c2;
+  };
 
   // 厚み(押し出し)
-  for (let i = 10; i >= 1; i--) {
-    ctx.lineWidth = 40 * k; ctx.strokeStyle = g.ext; ctx.fillStyle = g.ext;
-    ctx.strokeText(text, x, y + i * 2.6 * k); ctx.fillText(text, x, y + i * 2.6 * k);
-  }
+  const extC = colored(40 * k, g.ext);
+  for (let i = 10; i >= 1; i--) ctx.drawImage(extC, 0, i * 2.6 * k);
   // 外側の黒縁 → メッキの縁
-  ctx.lineWidth = 40 * k; ctx.strokeStyle = '#0a0300'; ctx.strokeText(text, x, y);
-  ctx.lineWidth = 30 * k; ctx.strokeStyle = vgrad(ctx, g.rim); ctx.strokeText(text, x, y);
-  emboss(ctx, (cx) => { cx.lineWidth = 30 * k; cx.strokeText(text, x, y); }, 4 * k);
+  ctx.drawImage(colored(40 * k, '#0a0300'), 0, 0);
+  ctx.drawImage(colored(30 * k, (cx) => vgrad(cx, g.rim)), 0, 0);
+  emboss(ctx, (cx) => cx.drawImage(dilate(30 * k), 0, 0), 4 * k);
   // 内側の細い線 → 面
-  ctx.lineWidth = 9 * k; ctx.strokeStyle = g.line; ctx.strokeText(text, x, y);
+  ctx.drawImage(colored(9 * k, g.line), 0, 0);
   if (g.face) ctx.fillStyle = vgrad(ctx, g.face);
   else {
     const gr = ctx.createLinearGradient(x - W / 2, 0, x + W / 2, 0);
