@@ -42,6 +42,9 @@
   button, #pv { touch-action: manipulation; }
   #pv { touch-action: pan-y; }
   body.green { background: #00ff00; }
+  /* ?transparent: 背景を本当に透明にする(OBS のブラウザソースはそのまま透過で重ねられる) */
+  html.transparent, html.transparent body { background: transparent; }
+  html.transparent #btn-greenscreen { display: none; }
   /* 舞台: 16:9 / 9:16 の比率を保ったまま窓に合わせて拡大縮小。余りは黒帯(グリーンバック時は緑) */
   #gl { position: fixed; left: 0; top: 0; display: block; }
   #stage { position: fixed; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; --vw: 19.2px; --vh: 10.8px; }
@@ -2731,9 +2734,16 @@ $('btn-greenscreen').addEventListener('click', () => {
   isGreen = !isGreen;
   document.body.classList.toggle('green', isGreen);
   bg.visible = !isGreen;
-  savePass.enabled = alphaPass.enabled = isGreen;
+  savePass.enabled = alphaPass.enabled = isGreen || TRANSPARENT;
   $('gs-label').textContent = isGreen ? '通常背景に戻す' : 'OBSグリーンバック';
 });
+// 透過モード: 背景の後光を消し、光の粒やにじみも含めて本当の透明度で描き出す
+const TRANSPARENT = new URLSearchParams(location.search).has('transparent');
+if (TRANSPARENT) {
+  document.documentElement.classList.add('transparent');
+  bg.visible = false;
+  savePass.enabled = alphaPass.enabled = true;
+}
 $('btn-sound').addEventListener('click', () => {
   sound.enabled = !sound.enabled;
   $('sound-icon').textContent = sound.enabled ? '🔊' : '🔇';

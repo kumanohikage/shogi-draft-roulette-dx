@@ -74,8 +74,12 @@
 |---|---|
 | 横配信（16:9） | https://kumanohikage.github.io/shogi-draft-roulette-dx/?layout=horizontal |
 | 縦配信（9:16） | https://kumanohikage.github.io/shogi-draft-roulette-dx/?layout=vertical |
+| 横・背景透過 | https://kumanohikage.github.io/shogi-draft-roulette-dx/?layout=horizontal&transparent |
+| 縦・背景透過 | https://kumanohikage.github.io/shogi-draft-roulette-dx/?layout=vertical&transparent |
 
 配信用URLは、窓やソースの大きさが半端でも比率が崩れません（余りは黒帯）。末尾に何も付けないURLは画面いっぱいの表示です。
+
+**背景を透過して重ねる（おすすめ）**：OBS のブラウザソースでは、URL に `&transparent` を付けると背景が本当に透明になります。光の粒やにじみもそのまま半透明で重なるので、グリーンバック＋クロマキーより綺麗です。グリーンバックは、サムネ素材づくりなど OBS 以外で切り抜きたいとき用に残しています。
 
 **A. ブラウザソース**
 
@@ -91,7 +95,7 @@
 1. 普段のブラウザでページを開き、右上の **🪟 横窓** / **🪟 縦窓** を押すと、アドレスバーの無い配信用の窓が開きます
 2. OBS で **ウィンドウキャプチャ** → その窓を選ぶ
 
-背景を透かしたいときは「OBSグリーンバック」→ OBS でクロマキー。配信画面にボタンを映したくないときは「UIを隠す」（H キー）を使います。スピン中はボタン類が自動で消えます。
+配信画面にボタンを映したくないときは「UIを隠す」（H キー）を使います。スピン中はボタン類が自動で消えます。
 
 ## 改変・利用について
 
