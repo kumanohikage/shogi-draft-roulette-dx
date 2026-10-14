@@ -1681,6 +1681,13 @@ function evalSignal(lead, r, pulse = true) {
 }
 // 決着: 勝者で「+3000 勝ち」
 function evalWin(lead) { evalSt.won = true; evalSt.mate = lead; evalSt.L = evalSt.L.map((_, i) => (i === lead ? 1 : 0)); renderEval(true); }
+// その人の評価値(ほかの中でいちばん高い人との差)。±2000 まで
+function evalOf(i) {
+  const P = evalSt.P || [];
+  const other = Math.max(...P.filter((_, j) => j !== i), 1e-9);
+  const v = Math.round(600 * Math.log(Math.max(P[i], 1e-9) / other) / 10) * 10;
+  return Math.max(-2000, Math.min(2000, v));
+}
 function evalMate(lead) { evalSt.mate = lead; evalSt.L = evalSt.L.map((_, i) => (i === lead ? 1 : 0)); renderEval(true); }
 // 勝率から評価値へ(将棋ソフトでよく使う 勝率 = 1/(1+exp(-評価値/600)) の逆)。3人以上は 1位と2位 の比で出す
 function renderEval(pulse) {
@@ -1696,6 +1703,7 @@ function renderEval(pulse) {
       const t = P.reduce((a, b) => a + b, 0); P = P.map((v) => v / t);
     }
   }
+  evalSt.P = P;
   const order = P.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
   const [p1, top] = order[0], p2 = order[1] ? order[1][0] : 0;
   const track = bar.querySelector('.eb-track');
@@ -1788,9 +1796,11 @@ async function pseudoSpins(list, mode) {
       { dur: 1.1, p0: p0 + D * 0.25, p1, ease: E.outCubic },
     ]);
     sound.pseudoStop(); flash('#fff', 0.25, 0.55); fx.shake = Math.max(fx.shake, 0.5);
-    cutin(`×${k + 2}`, 't-gold', { dur: 700, small: true, gloss: 'gold' });
     evalSignal(lead, SIGN_REL);
-    await sleep(620);
+    // 仮停止した人の名前と評価値
+    const v = evalOf(lead);
+    cutin(v > 0 ? `+${v}` : v < 0 ? `−${-v}` : '±0', 't-lead', { dur: 900, small: true, gloss: 'gold', color: leaderColor(lead), sub: draft.leaders[lead] });
+    await sleep(820);
   }
 }
 
