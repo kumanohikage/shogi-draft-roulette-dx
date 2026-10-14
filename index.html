@@ -1148,7 +1148,12 @@ function croppedDataURL(size = 320) {
   if (!draftImg) return '';
   const c = makeCanvas(size), x = c.getContext('2d');
   x.beginPath(); x.arc(size / 2, size / 2, size / 2, 0, TAU); x.clip();
-  if (!draft.imgBg) { x.fillStyle = '#fff'; x.fillRect(0, 0, size, size); }   // 結果画面の丸は、背景なしなら白
+  if (!draft.imgBg) {
+    // 結果画面の丸は、背景なしなら半透明の白(中央は濃く、ふちは背景になじむ)
+    const g = x.createRadialGradient(size / 2, size / 2, size * 0.1, size / 2, size / 2, size / 2);
+    g.addColorStop(0, 'rgba(255,255,255,.8)'); g.addColorStop(1, 'rgba(255,255,255,.45)');
+    x.fillStyle = g; x.fillRect(0, 0, size, size);
+  }
   drawCropped(x, draftImg, draft.crop, size / 2, size / 2, size);
   try { return c.toDataURL('image/png'); } catch (_) { return draft.image; }
 }
