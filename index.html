@@ -811,8 +811,9 @@ function planDraft(winner, n) {
   // ステップアップの段数(歩=1 … 玉=8)。熱いリーチほど上まで上がる
   const steps = +[() => pickW({ 2: 3, 3: 4, 4: 3, 5: 1 }), () => pickW({ 5: 2, 6: 3 }), () => pickW({ 6: 1, 7: 2 }), () => pickW({ 7: 1, 8: 3 })][hv]();
   const pseudoN = [() => +chance(0.5), () => 1 + chance(0.5), () => 2, () => 2 + chance(0.5)][hv]();
-  const pseudo = Array.from({ length: restart ? 0 : pseudoN }, () => point(SIGN_REL));
-  const gemLead = point(SIGN_REL);
+  // リーチから全回転になる回は、それまでの演出を勝者と無関係(完全ランダム)にする
+  const pseudo = Array.from({ length: restart ? 0 : pseudoN }, () => (zen ? Math.floor(Math.random() * n) : point(SIGN_REL)));
+  const gemLead = zen ? Math.floor(Math.random() * n) : point(SIGN_REL);
   const swarm = !restart && chance([0.12, 0.35, 0.5, 0.6][hv]);
   const gimmick = chance([0.08, 0.3, 0.45, 0.5][hv]);
   const gekiatsu = (heat === 'gold' || heat === 'zebra') && heatPath.length === 1 && chance(0.35);
@@ -2106,10 +2107,18 @@ async function runReach(plan, mode, entryIdx, landAngle, prelude, winner) {
   // 針はその人のマスで止まり、勝者が別ならそこから動き出す
   const P0 = evalSt.P || [];
   const top = P0.length ? P0.indexOf(Math.max(...P0)) : -1;
-  if (top >= 0 && evalOf(top) >= 600 && plan.heat !== 'rainbow') {
-    plan.leads = [top];
+  let soloLead = -1;
+  if (plan.reachZenkai) {
+    // リーチから全回転: リーチは勝者以外(評価値トップが勝者でなければその人)。全回転で別の人に逆転確定する
+    let x = top >= 0 && top !== winner ? top : -1;
+    if (x < 0) { do { x = Math.floor(Math.random() * n); } while (x === winner); }
+    plan.heatPath = ['normal']; plan.heat = 'normal'; plan.donden = false;
+    soloLead = x;
+  } else if (top >= 0 && evalOf(top) >= 600 && plan.heat !== 'rainbow') soloLead = top;
+  if (soloLead >= 0) {
+    plan.leads = [soloLead];
     plan.solo = true;
-    const passK = mod(winner - top, n);
+    const passK = mod(winner - soloLead, n);
     const landIdx = Math.floor(landAngle / arc);
     if (passK === 0) { plan.pattern = 'stay'; landAngle = (landIdx + rand(0.84, 0.95)) * arc; }
     else if (passK >= 2) { plan.pattern = 'pass'; landAngle = (landIdx + rand(0.06, 0.3)) * arc; }
