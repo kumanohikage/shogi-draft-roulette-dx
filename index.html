@@ -1662,14 +1662,20 @@ function updateGem(dt) {
 }
 /* ---------- 評価値: 出た演出から、各リーダーの当たりやすさ(事後確率)を計算して見せる ---------- */
 const evalSt = { L: [], mate: -1, won: false };
-function evalReset(n) { evalSt.L = Array(n).fill(1); evalSt.mate = -1; evalSt.won = false; renderEval(false); $('evalbar').classList.add('show'); document.body.classList.add('evaling'); }
+// 見せ方の強さ: 本当の確率どおりだと結果が読めすぎるので、普段は各演出の効きを弱めて接戦に見せる。
+// たまに(2割)本当の強さで動かし、「かなりの優勢で勝つ」回も作る
+const DAMP = 0.35;
+function evalReset(n) { evalSt.L = Array(n).fill(1); evalSt.mate = -1; evalSt.won = false; evalSt.damp = chance(0.2) ? 1 : (n === 2 ? DAMP : DAMP * 0.7); renderEval(false); $('evalbar').classList.add('show'); document.body.classList.add('evaling'); }
 function evalHide() { $('evalbar').classList.remove('show'); document.body.classList.remove('evaling'); }
 // lead を信頼度 r で指す演出が出た: 勝者が i なら起きる確率 = i==lead ? r : (1-r)/(n-1)
 function evalSignal(lead, r, pulse = true) {
   const n = evalSt.L.length;
   if (!n || evalSt.mate >= 0) return;
   r = Math.min(r, 0.99);   // 確定のリーチでも「まだ1%はあるかも」と見せる(詰みは全回転だけ)
-  evalSt.L = evalSt.L.map((v, i) => v * (i === lead ? r : (1 - r) / (n - 1)));
+  // 信頼度を「人数で割った互角の値」に向けて弱める(普段は DAMP、たまに本当の強さ)
+  const base = 1 / n; r = base + (r - base) * (evalSt.damp ?? 1);
+  // 各リーダーに揺らぎも足す(形勢が行ったり来たりして見えるように)
+  evalSt.L = evalSt.L.map((v, i) => v * (i === lead ? r : (1 - r) / (n - 1)) * Math.exp(rand(-0.6, 0.6)));
   renderEval(pulse);
 }
 // 決着: 勝者で「+3000 勝ち」
