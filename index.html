@@ -795,6 +795,7 @@ function bumpZenkai(hit) {
   zenkaiCount = hit ? 0 : zenkaiCount + 1;
   try { localStorage.setItem(ZENKAI_KEY, String(zenkaiCount)); } catch (_) { /* 同上 */ }
 }
+const DRAFT_IPPATSU = 0.05;
 const DRAFT_REACH_FREEZE = 0.04, DRAFT_RESTART = 0.10, DRAFT_FURIGOMA = 0.3, DRAFT_DONDEN = 0.11;
 const zenkaiPlan = () => ({ zenkaiten: true, heat: 'rainbow', heatPath: ['rainbow'], leads: [], pattern: 'straight', steps: 0, pseudo: [], swarm: false, gemLead: -1, vibe: false, gimmick: false, gekiatsu: false, push: false, mash: false, gemEvents: [], furigoma: -1 });
 const TOKIN_BY_HEAT = { normal: [0, 1, 2], gold: [3, 4], zebra: [4], rainbow: [5] };
@@ -803,6 +804,8 @@ function planDraft(winner, n) {
   const zen = chance(zenkaiRate());
   bumpZenkai(zen);
   if (zen && chance(0.5)) return zenkaiPlan();
+  // まれにリーチなしで普通に止まって決まる(一発決着)
+  if (!zen && chance(DRAFT_IPPATSU)) return { ...zenkaiPlan(), zenkaiten: false, ippatsu: true, heat: 'normal', heatPath: ['normal'] };
   // 指す: p の確率で勝者、残りはほかのリーダーをランダムに
   const other = () => { let i; do { i = Math.floor(Math.random() * n); } while (i === winner && n > 1); return i; };
   const point = (p) => (chance(p) ? winner : other());
@@ -1145,6 +1148,7 @@ function croppedDataURL(size = 320) {
   if (!draftImg) return '';
   const c = makeCanvas(size), x = c.getContext('2d');
   x.beginPath(); x.arc(size / 2, size / 2, size / 2, 0, TAU); x.clip();
+  if (!draft.imgBg) { x.fillStyle = '#fff'; x.fillRect(0, 0, size, size); }   // 結果画面の丸は、背景なしなら白
   drawCropped(x, draftImg, draft.crop, size / 2, size / 2, size);
   try { return c.toDataURL('image/png'); } catch (_) { return draft.image; }
 }
@@ -1892,6 +1896,18 @@ async function startSpin() {
   await sleep(1500);
 
   if (plan.zenkaiten) { await zenkaiten(mode, landAngle, winner); return finish(winner); }
+  if (plan.ippatsu) {
+    // 一発決着: 予告もリーチもなく普通に止まる → 一瞬の静寂 → ガコッ
+    fx.bulb = 'spin'; fx.ambientRate = AMB_SPIN;
+    sound.spinStart();
+    setHold('none');
+    await spinTo(landAngle, mode);
+    sound.stopThud();
+    fx.bulb = 'off'; fx.dimT = 0.8; fx.ambientRate = 0;
+    await sleep(700);
+    sound.gata(); flash('#fff', 0.6, 1); fx.shake = 1; fx.dimT = 0;
+    return finish(winner);
+  }
   if (plan.furigoma >= 0) await furigomaFx(plan.furigoma);
 
   fx.bulb = 'spin';
