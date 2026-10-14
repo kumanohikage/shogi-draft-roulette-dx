@@ -2265,7 +2265,8 @@ async function runReach(plan, mode, entryIdx, landAngle, prelude, winner) {
   }
   const winIndex = entryIdx; // 針が最後に越える境目(このマスの入口)
   const phi0 = phi, Ta = 0.7;
-  const holdGap = 0.5;
+  // 境目フリーズはリーチの時点で境目ギリギリまで迫って止める(あとからもう一度近づかない)
+  const holdGap = plan.donden ? rand(0.015, 0.04) : 0.5;
   const creepDist = 1.3 * arc;
   const Tc = 3.2, Td = 4.3;
   const phiB = phiFor(winIndex * arc, phi0 + creepDist + holdGap * arc, 5); // 境目が針に来る φ
@@ -2338,7 +2339,7 @@ async function runReach(plan, mode, entryIdx, landAngle, prelude, winner) {
   await mainDone;
   await during;
   fx.bulb = 'hold';
-  tremble = Math.min(0.12 * arc, 0.01);
+  tremble = Math.min(0.12 * arc, 0.01, holdGap * arc * 0.4);   // 境目ギリギリのときは震えで越えないように
 
   // リーチ中のフリーズ(確定) / 全回転への移行
   if (plan.reachFreeze || plan.reachZenkai) {
@@ -2369,14 +2370,10 @@ async function runReach(plan, mode, entryIdx, landAngle, prelude, winner) {
 
   if (plan.donden) {
     // 境目フリーズ: 2人の境目ギリギリで止まりかけ → 暗転・無音で震える(どっちだ…!?) → どちらかに決まる
-    const edge = phiB - rand(0.015, 0.04) * arc;   // 境目の手前ギリギリ(手前の人のマス)
-    // 迫りながら、針の先へ吸い込まれるようにカメラが寄っていく(お、お、おーー…)
-    fx.edgeK = 0; fx.edgeT = 0.55; fx.edgeRate = 0.7;
-    sound.swell(3.4);
-    await play([{ dur: 2.8, p0: phiHold, p1: edge, ease: E.outCubic }]);
-    sound.stopThud();
-    fx.edgeT = 1; fx.edgeRate = 1.6;
-    await sleep(250);
+    const edge = phiHold;   // リーチの時点で境目ギリギリに止まっている
+    // 無音のまま、針の先へ吸い込まれるようにカメラが寄る
+    fx.edgeK = 0; fx.edgeT = 1; fx.edgeRate = 1.4;
+    await sleep(900);
     fx.bulb = 'off'; fx.dimT = 0.85; fx.ambientRate = 0; vignette(null, false);
     tremble = 0.012 * arc;   // 無音のまま震える
     await sleep(2000);
