@@ -438,7 +438,10 @@
   body.touch #btn-greenscreen, body.touch #btn-transparent, body.touch #btn-hide, body.touch #hint { display: none; }
   body.touch header { flex-wrap: nowrap; }
   body.touch #app-title { font-size: 14px; padding: 5px 10px; white-space: nowrap; }
-  body.touch #matchup { top: 52px; }
+  body.touch #matchup { top: 60px; font-size: 22px; }
+  /* 幅の狭いスマホでもヘッダーを1行に収める(タイトルは省略表示) */
+  body.touch .tools { flex-wrap: nowrap; flex: none; }
+  body.touch #app-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
   body.touch:not(.vertical) #matchup { top: 12px; }
   /* スマホ(タッチ): 評価値の文字とバーを読める大きさに */
   body.touch #evalbar { padding: calc(6px * var(--uiz)) calc(12px * var(--uiz)) calc(9px * var(--uiz)); border-radius: calc(12px * var(--uiz)); }
