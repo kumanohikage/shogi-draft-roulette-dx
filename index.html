@@ -777,15 +777,27 @@ const HEAT_ORDER = ['normal', 'gold', 'zebra', 'rainbow'];
 const REACH_REL = { normal: 0.7, gold: 0.8, zebra: 0.9, rainbow: 1 };
 const SIGN_REL = 0.6;
 const PUSH_RATE = { normal: 0.2, gold: 0.5, zebra: 0.7, rainbow: 1 };   // PUSH は控えめ(押すのは主催者なので)
-const DRAFT_ZENKAI = 0.02, DRAFT_REACH_ZENKAI = 0.02, DRAFT_REACH_FREEZE = 0.04, DRAFT_RESTART = 0.10, DRAFT_FURIGOMA = 0.3, DRAFT_DONDEN = 0.11;
+// 全回転: 回すほど出やすくなり、出たら元に戻る(k 回目 = 2% × k、最大 40%)。10回のうちに約7割で1回は出る
+const ZENKAI_KEY = 'draftZenkaiCount';
+let zenkaiCount = 0;
+try { zenkaiCount = Math.max(0, parseInt(localStorage.getItem(ZENKAI_KEY) || '0', 10) || 0); } catch (_) { /* 保存できない環境でも動く */ }
+function zenkaiRate() { return Math.min(0.4, 0.02 * (zenkaiCount + 1)); }
+function bumpZenkai(hit) {
+  zenkaiCount = hit ? 0 : zenkaiCount + 1;
+  try { localStorage.setItem(ZENKAI_KEY, String(zenkaiCount)); } catch (_) { /* 同上 */ }
+}
+const DRAFT_REACH_FREEZE = 0.04, DRAFT_RESTART = 0.10, DRAFT_FURIGOMA = 0.3, DRAFT_DONDEN = 0.11;
 const zenkaiPlan = () => ({ zenkaiten: true, heat: 'rainbow', heatPath: ['rainbow'], leads: [], pattern: 'straight', steps: 0, pseudo: [], swarm: false, gemLead: -1, vibe: false, gimmick: false, gekiatsu: false, push: false, mash: false, gemEvents: [], furigoma: -1 });
 const TOKIN_BY_HEAT = { normal: [0, 1, 2], gold: [3, 4], zebra: [4], rainbow: [5] };
 function planDraft(winner, n) {
-  if (chance(DRAFT_ZENKAI)) return zenkaiPlan();
+  // 全回転の抽選(半分はスピン開始から、半分はリーチの途中から)
+  const zen = chance(zenkaiRate());
+  bumpZenkai(zen);
+  if (zen && chance(0.5)) return zenkaiPlan();
   // 指す: p の確率で勝者、残りはほかのリーダーをランダムに
   const other = () => { let i; do { i = Math.floor(Math.random() * n); } while (i === winner && n > 1); return i; };
   const point = (p) => (chance(p) ? winner : other());
-  const restart = chance(DRAFT_RESTART);
+  const restart = !zen && chance(DRAFT_RESTART);
   const heat = pickW(HEAT_W);
   const hv = HEAT_ORDER.indexOf(heat);
   // 熱さの昇格(通常で始まって金/虹へ)
@@ -820,7 +832,7 @@ function planDraft(winner, n) {
   const furigoma = !restart && chance(DRAFT_FURIGOMA) ? opts[Math.floor(Math.random() * opts.length)] : -1;
   return {
     freeze: false, restart, heat, heatPath, leads, pattern, steps, pseudo, swarm, gemLead, vibe, gimmick, gekiatsu, push, mash, gemEvents, furigoma,
-    reachFreeze: !restart && chance(DRAFT_REACH_FREEZE), reachZenkai: !restart && chance(DRAFT_REACH_ZENKAI), donden: chance(DRAFT_DONDEN),
+    reachFreeze: !restart && chance(DRAFT_REACH_FREEZE), reachZenkai: zen, donden: chance(DRAFT_DONDEN),
   };
 }
 
