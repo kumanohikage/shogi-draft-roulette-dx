@@ -451,6 +451,8 @@
   /* 決着は将棋盤まわりの白黒で落ち着いて見せる(詰み=白地に墨、勝ち=墨地に白) */
   #evalbar .eb-word.mate { background: #f4efe4; color: #111; letter-spacing: .15em; }
   #evalbar .eb-word.win { background: #111; color: #fff; border: 1px solid #f4efe4; letter-spacing: .15em; }
+  /* 字間を空けると最後の文字の後ろにも隙間ができて左に寄るので、同じ分だけ先頭にも空ける */
+  #evalbar .eb-word.mate, #evalbar .eb-word.win { text-indent: .15em; }
   #evalbar .eb-track { display: flex; height: 16px; margin-top: 5px; border-radius: 8px; overflow: hidden; background: #222; box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
   #evalbar .eb-track > i { display: block; height: 100%; transition: flex-grow .9s cubic-bezier(.2,.8,.2,1); position: relative; }
   #evalbar .eb-track > i + i { box-shadow: -2px 0 0 #fff; }
@@ -1017,7 +1019,7 @@ function glossy(text, scheme) {
 // 使う文字は決まっているので、起動後に少しずつ先に作っておく
 function warmGlossy() {
   const jobs = [['抽選リーチ', 'red'], ['抽選リーチ', 'gold'], ['抽選リーチ', 'rainbow'],
-    ['激熱', 'red'], ['交渉権確定！', 'red'], ['全回転', 'rainbow'], ['大逆転!!', 'rainbow'], ['再抽選!!', 'rainbow'], ...draft.leaders.map((n) => [n, 'gold']), [draft.pick, 'gold'],
+    ['激熱', 'red'], ['交渉権確定!', 'red'], ['全回転', 'rainbow'], ['大逆転!!', 'rainbow'], ['再抽選!!', 'rainbow'], ...draft.leaders.map((n) => [n, 'gold']), [draft.pick, 'gold'],
     ['ボタンを押せ!!', 'red'], ['ボタンを押せ!!', 'gold'], ['ボタンを押せ!!', 'rainbow'], ['ボタンを連打!!', 'gold'], ['ボタンを連打!!', 'rainbow']];
   // 最初のカットインだけ 0.1 秒ほど止まる(描画の初回準備)ので、見えないカットインを先に1回出しておく
   const next = () => { const j = jobs.shift(); if (!j) { cutin('抽選リーチ', 't-gold', { dur: 900, gloss: 'gold', ghost: true }); return; } getGlossy(...j); setTimeout(next, 60); };
@@ -2407,7 +2409,7 @@ function showResult(winner) {
     t.appendChild(ph);
   }
   const l = document.createElement('div'); l.className = 'r-leader'; l.appendChild(glossy(draft.leaders[winner], 'gold'));
-  const k = document.createElement('div'); k.className = 'r-kaku'; k.appendChild(glossy('交渉権確定！', 'red'));
+  const k = document.createElement('div'); k.className = 'r-kaku'; k.appendChild(glossy('交渉権確定!', 'red'));
   const p = document.createElement('div'); p.className = 'r-pick'; p.textContent = `指名：${draft.pick}`;
   // 画像のすぐ下に指名者名(画像が指名者だと分かるように)、その下にリーダー名と交渉権確定
   t.append(p, l, k);
@@ -2960,7 +2962,7 @@ document.addEventListener('touchend', (e) => {
 (async () => {
   try {
     await Promise.race([
-      Promise.all([document.fonts.load(`100px 'Dela Gothic One'`, '抽選リーチ激熱交渉権確定！全回転再振り駒と×12345ボタンを押せ連打!大逆転' + draft.leaders.join('') + draft.pick), document.fonts.load(`900 100px 'Noto Sans JP'`, '王飛角金銀桂香歩龍馬全圭杏と')]),
+      Promise.all([document.fonts.load(`100px 'Dela Gothic One'`, '抽選リーチ激熱交渉権確定!全回転再振り駒と×12345ボタンを押せ連打!大逆転' + draft.leaders.join('') + draft.pick), document.fonts.load(`900 100px 'Noto Sans JP'`, '王飛角金銀桂香歩龍馬全圭杏と')]),
       sleep(2500),
     ]);
   } catch (_) { /* フォント無しでも続行 */ }
