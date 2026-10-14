@@ -1833,6 +1833,15 @@ async function startSpin() {
   if (plan.zenkaiten) { await zenkaiten(mode, landAngle, winner); return finish(winner); }
   if (plan.furigoma >= 0) await furigomaFx(plan.furigoma);
   plan.donden = plan.donden && passK >= 1; // 決まったと見せる逆転は、手前のマス(別の人)を経由できるときだけ
+  // 「待った!!」のときは、止まりかける人(勝者の1つ手前のマス = 勝者の前のリーダー)を評価値の上で優勢に見せておく(ブラフ)
+  // 虹リーチは確定のままにする
+  if (plan.donden) {
+    const fake = mod(winner - 1, n);
+    plan.gemLead = fake;
+    plan.gemEvents = plan.gemEvents.map((e) => (e.kind === 'change' ? { ...e, to: `L${fake}` } : e));
+    plan.pseudo = plan.pseudo.map((l) => (chance(0.6) ? fake : l));
+    if (plan.heat !== 'rainbow' && chance(0.7)) plan.leads[plan.leads.length - 1] = fake;
+  }
 
   fx.bulb = 'spin';
   fx.ambientRate = AMB_SPIN;
