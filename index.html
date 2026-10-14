@@ -229,6 +229,8 @@
   @keyframes shineMove { from { transform: translateX(-110%); } to { transform: translateX(470%); } }
   .cutin .main.gl { background: none; -webkit-text-stroke: 0; filter: none; }
   .cutin .main.gl .glw { width: min(calc(86 * var(--vw)), calc(var(--ar, 4) * 26 * var(--vh))); }
+  /* 全回転などの特別なカットインは、光と闇と同じく画面いっぱいの大きさで */
+  .cutin.huge .main.gl .glw { width: calc(72 * var(--vw)); }
   .cutin.small .main.gl .glw { width: min(calc(60 * var(--vw)), calc(var(--ar, 4) * 13 * var(--vh))); }
   .cutin .main.gl .glw canvas { filter: drop-shadow(0 0 22px var(--glow)); }
   #result-text.gl, #result.end #result-text.gl, body.mode-dark #result.end #result-text.gl { background: none; -webkit-text-stroke: 0; filter: none; }
@@ -271,6 +273,7 @@
   body.vertical .cutin .main { font-size: calc(19 * var(--vw)); }
   body.vertical .cutin.small .main { font-size: calc(15 * var(--vw)); }
   body.vertical .cutin .main.gl .glw { width: min(calc(96 * var(--vw)), calc(var(--ar, 4) * 24 * var(--vw))); }
+  body.vertical .cutin.huge .main.gl .glw { width: calc(96 * var(--vw)); }
   body.vertical .cutin.small .main.gl .glw { width: min(calc(90 * var(--vw)), calc(var(--ar, 4) * 17 * var(--vw))); }
   body.vertical .cutin .band { height: calc(24 * var(--vh)); margin-top: calc(-12 * var(--vh)); }
   body.vertical .cutin.small .band { height: calc(14 * var(--vh)); margin-top: calc(-7 * var(--vh)); }
@@ -1643,9 +1646,9 @@ function phiFor(aT, from, minTurns) {
 
 /* ---------- DOM 演出 ---------- */
 const fxLayer = $('fx');
-function cutin(text, cls, { dur = 1400, sub = '', small = false, gloss = null, ghost = false, color = null } = {}) {
+function cutin(text, cls, { dur = 1400, sub = '', small = false, gloss = null, ghost = false, color = null, huge = false } = {}) {
   const el = document.createElement('div');
-  el.className = `cutin ${cls}${small ? ' small' : ''}`;
+  el.className = `cutin ${cls}${small ? ' small' : ''}${huge ? ' huge' : ''}`;
   if (color) {
     const c = new THREE.Color(color), hi = `#${c.clone().lerp(new THREE.Color('#fff'), 0.35).getHexString()}`, lo = `#${c.clone().multiplyScalar(0.45).getHexString()}`;
     el.style.setProperty('--band', `linear-gradient(180deg, ${hi}, ${color} 50%, ${lo})`);
@@ -2155,7 +2158,7 @@ async function zenkaiten(mode, landAngle, winner, fromReach = false) {
   // 盤に寄ると発光部分が画面いっぱいになって白飛びするので、全回転中は盤の光を控えめにする
   fx.reachT = 0.6; fx.winT = 0.2; fx.bulb = 'win'; fx.cam = 'zenkai'; fx.zenkai = true; fx.faceGlowT = 0.7;
   document.body.classList.add('reaching');
-  cutin('全回転', 't-rainbow', { dur: 1700, gloss: 'rainbow' });
+  cutin('全回転', 't-rainbow', { dur: 1700, gloss: 'rainbow', huge: true });
   // 4) 高速回転(速さが途切れないように 加速 / 一定 / 減速 で距離を配分) しながら全マスが終了に変わる
   const c0 = phi, Ta = 0.8, Tc = 4.4, Td = 3.6;
   const phiF = phiFor(landAngle, c0 + 55, 0);
