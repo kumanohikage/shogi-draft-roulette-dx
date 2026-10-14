@@ -78,6 +78,7 @@
     padding: 7px 11px; border-radius: 9px; cursor: pointer;
     background: var(--ui-bg); border: 1px solid var(--ui-border);
   }
+  a.tool { text-decoration: none; display: inline-block; }
   .tool:hover { filter: brightness(1.15); }
 
   /* 評価値バーが出ている間は、同じ場所の指名者表示を隠す */
@@ -213,11 +214,6 @@
     -webkit-text-stroke: 4px #12001f;
     filter: drop-shadow(0 0 34px #b026ff) drop-shadow(0 10px 0 rgba(0,0,0,.6));
   }
-  #result-x {
-    position: absolute; top: 18px; right: 18px; width: 40px; height: 40px; border-radius: 50%;
-    border: 1px solid rgba(255,255,255,.4); background: rgba(0,0,0,.5); color: #fff; font-size: 18px; cursor: pointer;
-  }
-  body.ui-hidden #result-x { opacity: 0; }
   @keyframes fadeIn { from { opacity: 0; } }
   @keyframes resIn { 0% { transform: scale(2.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
   @keyframes resInEnd { 0% { transform: scale(2.6) rotate(-8deg); opacity: 0; } 60% { transform: scale(.92) rotate(0); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
@@ -429,7 +425,7 @@
   /* スマホ・タブレット(タッチ操作): 縮みすぎる UI を読める大きさに戻し、配信用の部品は隠す */
   body.touch header, body.touch #matchup { zoom: var(--uiz, 1); }
   body.touch:not(.vertical) #btn-spin { zoom: var(--uiz, 1); }
-  body.touch #btn-greenscreen, body.touch #btn-transparent, body.touch #btn-win-h, body.touch #btn-win-v, body.touch #btn-hide, body.touch #hint { display: none; }
+  body.touch #btn-greenscreen, body.touch #btn-transparent, body.touch #btn-hide, body.touch #hint { display: none; }
   body.touch header { flex-wrap: nowrap; }
   body.touch #app-title { font-size: 14px; padding: 5px 10px; white-space: nowrap; }
   body.touch #matchup { top: 52px; }
@@ -488,8 +484,7 @@
       <button class="tool" id="btn-transparent" title="背景を透明にする(OBS のブラウザソースでそのまま重ねられる)">🔲 <span id="tp-label">背景透過</span></button>
       <button class="tool" id="btn-sound"><span id="sound-icon">🔊</span> <span id="sound-label">効果音 ON</span></button>
       <button class="tool" id="btn-settings" title="リーダー名・指名者を設定">⚙ 設定</button>
-      <button class="tool" id="btn-win-h" title="アドレスバーの無い16:9の窓を開く(ウィンドウキャプチャ用)">🪟 横窓</button>
-      <button class="tool" id="btn-win-v" title="アドレスバーの無い9:16の窓を開く(ウィンドウキャプチャ用)">🪟 縦窓</button>
+      <a class="tool" id="btn-help" href="https://github.com/kumanohikage/shogi-draft-roulette-dx#readme" target="_blank" rel="noopener" title="OBS での使い方・配信用URL">❓ 使い方</a>
       <button class="tool" id="btn-hide">🙈 UIを隠す (H)</button>
     </div>
   </header>
@@ -509,7 +504,6 @@
 <div id="result">
   <div class="rbg"></div>
   <div id="result-text">配信継続！</div>
-  <button id="result-x" aria-label="閉じる">✕</button>
 </div>
 <div id="flash"></div>
 </div>
@@ -2728,7 +2722,6 @@ canvas.addEventListener('mousemove', (e) => {
 });
 $('push').querySelector('.pbtn').addEventListener('click', () => pushResolve && pushResolve());
 $('result').addEventListener('click', closeResult);
-$('result-x').addEventListener('click', (e) => { e.stopPropagation(); closeResult(); });
 
 // 背景: 通常 / グリーンバック / 透過(背景の後光を消し、光の粒やにじみも本当の透明度で描き出す)
 let isTransparent = new URLSearchParams(location.search).has('transparent');
@@ -2936,17 +2929,7 @@ drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.ad
 drop.addEventListener('dragleave', () => drop.classList.remove('over'));
 drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); takeImageFile(e.dataTransfer.files[0]); });
 
-function openCaptureWindow(v) {
-  const aw = screen.availWidth, ah = screen.availHeight - 60;
-  let w, h;
-  if (v) { h = Math.min(1920, ah); w = Math.round(h * 9 / 16); }
-  else { w = Math.min(1920, aw - 40); h = Math.round(w * 9 / 16); if (h > ah) { h = ah; w = Math.round(h * 16 / 9); } }
-  const u = new URL(location.href);
-  u.searchParams.set('layout', v ? 'vertical' : 'horizontal');
-  window.open(u.toString(), v ? 'hyroulette_v' : 'hyroulette_h', `popup=yes,width=${w},height=${h}`);
-}
-$('btn-win-h').addEventListener('click', () => openCaptureWindow(false));
-$('btn-win-v').addEventListener('click', () => openCaptureWindow(true));
+
 // OBS の「対話(操作)」窓から届くキーは e.code が空のことがあるので、e.key / keyCode でも判定する
 function keyName(e) {
   if (e.code) return e.code;
