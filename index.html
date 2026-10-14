@@ -1818,16 +1818,26 @@ async function startSpin() {
   evalReset(n);
   // 止まるマス: 勝者のマスのどれか
   const landIdx = winner + n * Math.floor(Math.random() * (total / n));
-  // リーチ中(PUSH待ち)に針が止まるマスは、勝者から k マス手前。k を 0〜n-1 から均等に選ぶので、
-  // 止まっているリーダーが勝つ確率は他の誰とも同じ(1/n)。止まっている位置から結果は読めない。
-  //   k=0: そのマスのまま境目ギリギリで止まる / k=1: 入る・ギリギリ入る・手前で止まって復活 / k>=2: 別のリーダーを通過して入る
-  const passK = Math.floor(Math.random() * n) + (n === 2 && chance(0.3) ? 2 : 0);
+  // 「待った!!」は、止まりかける人(勝者の1つ手前のマス = 勝者の前のリーダー)を評価値の上で優勢に見せておく(ブラフ)。虹は確定のまま
+  const fake = mod(winner - 1, n);
+  if (plan.donden) {
+    plan.gemLead = fake;
+    plan.gemEvents = plan.gemEvents.map((e) => (e.kind === 'change' ? { ...e, to: `L${fake}` } : e));
+    plan.pseudo = plan.pseudo.map((l) => (chance(0.6) ? fake : l));
+    if (plan.heat !== 'rainbow' && chance(0.7)) plan.leads[plan.leads.length - 1] = fake;
+  }
+  // リーチ中(PUSH待ち)は、帯が指しているリーダーのマスの中で針を止める(そのまま止まればその人)。
+  // そこから勝者のマスまで passK マス進む。0 = そのまま止まる / 1 = 隣へ入る / 2以上 = 通過して入る
+  const reachLead = plan.leads.length ? plan.leads[plan.leads.length - 1] : winner;
+  let passK = mod(winner - reachLead, n);
+  if (passK === 0 && n <= 4 && chance(0.15)) passK = n;   // たまに一周して同じ人へ戻る
+  plan.donden = plan.donden && passK >= 1;                // 「待った!!」は手前のマス(別の人)を経由できるときだけ
   if (passK === 0) plan.pattern = 'stay';
   else if (passK >= 2) plan.pattern = 'pass';
   plan.passK = passK;
   const landFrac = plan.pattern === 'stay' ? rand(0.84, 0.95) : plan.pattern === 'short' ? rand(0.04, 0.12) : plan.pattern === 'pass' ? rand(0.06, 0.3) : rand(0.25, 0.7);
   const landAngle = (landIdx + landFrac) * arc;
-  // 針が最後に越える境目: 通過パターンは1つ手前(別のリーダー)のマスの入口
+  // 針が最後に越える境目(止まっているマスの次)
   const entryIdx = mod(landIdx - passK + 1, total);
 
   // 開幕: 指名者と競合数のカットイン
@@ -1838,16 +1848,6 @@ async function startSpin() {
 
   if (plan.zenkaiten) { await zenkaiten(mode, landAngle, winner); return finish(winner); }
   if (plan.furigoma >= 0) await furigomaFx(plan.furigoma);
-  plan.donden = plan.donden && passK >= 1; // 決まったと見せる逆転は、手前のマス(別の人)を経由できるときだけ
-  // 「待った!!」のときは、止まりかける人(勝者の1つ手前のマス = 勝者の前のリーダー)を評価値の上で優勢に見せておく(ブラフ)
-  // 虹リーチは確定のままにする
-  if (plan.donden) {
-    const fake = mod(winner - 1, n);
-    plan.gemLead = fake;
-    plan.gemEvents = plan.gemEvents.map((e) => (e.kind === 'change' ? { ...e, to: `L${fake}` } : e));
-    plan.pseudo = plan.pseudo.map((l) => (chance(0.6) ? fake : l));
-    if (plan.heat !== 'rainbow' && chance(0.7)) plan.leads[plan.leads.length - 1] = fake;
-  }
 
   fx.bulb = 'spin';
   fx.ambientRate = AMB_SPIN;
