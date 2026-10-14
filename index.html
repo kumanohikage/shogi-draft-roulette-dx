@@ -2120,8 +2120,9 @@ async function runReach(plan, mode, entryIdx, landAngle, prelude, winner) {
   ]);
 
   // リーチの帯: 熱さ(heatPath) と 指すリーダー(leads) が途中で変わることがある
-  const heats = plan.heatPath, leads = plan.leads;
-  const stepsN = Math.max(heats.length, leads.length);
+  const heats = plan.heatPath;
+  let leads = plan.leads;
+  let stepsN = Math.max(heats.length, leads.length);
   const at = (i) => ({ heat: heats[Math.min(i, heats.length - 1)], lead: leads[Math.min(i, leads.length - 1)] });
   const reachText = '抽選リーチ';
   const showReach = (st, dur, upgrade) => {
@@ -2149,6 +2150,14 @@ async function runReach(plan, mode, entryIdx, landAngle, prelude, winner) {
   flash(leaderColor(at(0).lead), 0.5, 0.7);
   fx.shake = Math.max(fx.shake, 0.6);
   sound.reach(2 + HEAT_ORDER.indexOf(at(0).heat));
+  // 最初のリーチは、その時点で評価値がいちばん高い人。最後に指す人(本命の抽選結果)が違えば、途中で寝返る
+  const P = evalSt.P || [];
+  const topNow = P.length ? P.indexOf(Math.max(...P)) : -1;
+  const finalLead = leads[leads.length - 1];
+  if (topNow >= 0 && P.some((v) => Math.abs(v - P[topNow]) > 1e-6)) {
+    leads = topNow === finalLead ? [finalLead] : [topNow, finalLead];
+    stepsN = Math.max(heats.length, leads.length);
+  }
   showReach(at(0), 1600, false);
   if (plan.gekiatsu) setTimeout(() => cutin('激熱', 't-red', { dur: 1150, small: true, gloss: 'red' }), 1650);
 
