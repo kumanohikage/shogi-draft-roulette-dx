@@ -44,7 +44,6 @@
   body.green { background: #00ff00; }
   /* ?transparent: 背景を本当に透明にする(OBS のブラウザソースはそのまま透過で重ねられる) */
   html.transparent, html.transparent body { background: transparent; }
-  html.transparent #btn-greenscreen { display: none; }
   /* 舞台: 16:9 / 9:16 の比率を保ったまま窓に合わせて拡大縮小。余りは黒帯(グリーンバック時は緑) */
   #gl { position: fixed; left: 0; top: 0; display: block; }
   #stage { position: fixed; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; --vw: 19.2px; --vh: 10.8px; }
@@ -430,7 +429,7 @@
   /* スマホ・タブレット(タッチ操作): 縮みすぎる UI を読める大きさに戻し、配信用の部品は隠す */
   body.touch header, body.touch #matchup { zoom: var(--uiz, 1); }
   body.touch:not(.vertical) #btn-spin { zoom: var(--uiz, 1); }
-  body.touch #btn-greenscreen, body.touch #btn-win-h, body.touch #btn-win-v, body.touch #btn-hide, body.touch #hint { display: none; }
+  body.touch #btn-greenscreen, body.touch #btn-transparent, body.touch #btn-win-h, body.touch #btn-win-v, body.touch #btn-hide, body.touch #hint { display: none; }
   body.touch header { flex-wrap: nowrap; }
   body.touch #app-title { font-size: 14px; padding: 5px 10px; white-space: nowrap; }
   body.touch #matchup { top: 52px; }
@@ -485,7 +484,8 @@
   <header>
     <h1 id="app-title">☗ 将棋ドラフト抽選ルーレットDX ☖</h1>
     <div class="tools">
-      <button class="tool" id="btn-greenscreen">🟩 <span id="gs-label">OBSグリーンバック</span></button>
+      <button class="tool" id="btn-greenscreen">🟩 <span id="gs-label">グリーンバック</span></button>
+      <button class="tool" id="btn-transparent" title="背景を透明にする(OBS のブラウザソースでそのまま重ねられる)">🔲 <span id="tp-label">背景透過</span></button>
       <button class="tool" id="btn-sound"><span id="sound-icon">🔊</span> <span id="sound-label">効果音 ON</span></button>
       <button class="tool" id="btn-settings" title="リーダー名・指名者を設定">⚙ 設定</button>
       <button class="tool" id="btn-win-h" title="アドレスバーの無い16:9の窓を開く(ウィンドウキャプチャ用)">🪟 横窓</button>
@@ -2730,20 +2730,19 @@ $('push').querySelector('.pbtn').addEventListener('click', () => pushResolve && 
 $('result').addEventListener('click', closeResult);
 $('result-x').addEventListener('click', (e) => { e.stopPropagation(); closeResult(); });
 
-$('btn-greenscreen').addEventListener('click', () => {
-  isGreen = !isGreen;
+// 背景: 通常 / グリーンバック / 透過(背景の後光を消し、光の粒やにじみも本当の透明度で描き出す)
+let isTransparent = new URLSearchParams(location.search).has('transparent');
+function applyBackdrop() {
   document.body.classList.toggle('green', isGreen);
-  bg.visible = !isGreen;
-  savePass.enabled = alphaPass.enabled = isGreen || TRANSPARENT;
-  $('gs-label').textContent = isGreen ? '通常背景に戻す' : 'OBSグリーンバック';
-});
-// 透過モード: 背景の後光を消し、光の粒やにじみも含めて本当の透明度で描き出す
-const TRANSPARENT = new URLSearchParams(location.search).has('transparent');
-if (TRANSPARENT) {
-  document.documentElement.classList.add('transparent');
-  bg.visible = false;
-  savePass.enabled = alphaPass.enabled = true;
+  document.documentElement.classList.toggle('transparent', isTransparent);
+  bg.visible = !isGreen && !isTransparent;
+  savePass.enabled = alphaPass.enabled = isGreen || isTransparent;
+  $('gs-label').textContent = isGreen ? '通常背景に戻す' : 'グリーンバック';
+  $('tp-label').textContent = isTransparent ? '透過を戻す' : '背景透過';
 }
+$('btn-greenscreen').addEventListener('click', () => { isGreen = !isGreen; if (isGreen) isTransparent = false; applyBackdrop(); });
+$('btn-transparent').addEventListener('click', () => { isTransparent = !isTransparent; if (isTransparent) isGreen = false; applyBackdrop(); });
+applyBackdrop();
 $('btn-sound').addEventListener('click', () => {
   sound.enabled = !sound.enabled;
   $('sound-icon').textContent = sound.enabled ? '🔊' : '🔇';
