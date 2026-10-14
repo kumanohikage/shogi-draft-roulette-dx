@@ -231,6 +231,8 @@
   .cutin .main.gl .glw { width: min(calc(86 * var(--vw)), calc(var(--ar, 4) * 26 * var(--vh))); }
   /* 全回転などの特別なカットインは、光と闇と同じく画面いっぱいの大きさで */
   .cutin.huge .main.gl .glw { width: calc(72 * var(--vw)); }
+  /* 短い言葉(激熱など)を大きく見せる */
+  .cutin.big .main.gl .glw { width: min(calc(86 * var(--vw)), calc(var(--ar, 4) * 40 * var(--vh))); }
   .cutin.small .main.gl .glw { width: min(calc(60 * var(--vw)), calc(var(--ar, 4) * 13 * var(--vh))); }
   .cutin .main.gl .glw canvas { filter: drop-shadow(0 0 22px var(--glow)); }
   #result-text.gl, #result.end #result-text.gl, body.mode-dark #result.end #result-text.gl { background: none; -webkit-text-stroke: 0; filter: none; }
@@ -274,6 +276,7 @@
   body.vertical .cutin.small .main { font-size: calc(15 * var(--vw)); }
   body.vertical .cutin .main.gl .glw { width: min(calc(96 * var(--vw)), calc(var(--ar, 4) * 24 * var(--vw))); }
   body.vertical .cutin.huge .main.gl .glw { width: calc(96 * var(--vw)); }
+  body.vertical .cutin.big .main.gl .glw { width: min(calc(96 * var(--vw)), calc(var(--ar, 4) * 36 * var(--vw))); }
   body.vertical .cutin.small .main.gl .glw { width: min(calc(90 * var(--vw)), calc(var(--ar, 4) * 17 * var(--vw))); }
   body.vertical .cutin .band { height: calc(24 * var(--vh)); margin-top: calc(-12 * var(--vh)); }
   body.vertical .cutin.small .band { height: calc(14 * var(--vh)); margin-top: calc(-7 * var(--vh)); }
@@ -1650,9 +1653,9 @@ function phiFor(aT, from, minTurns) {
 
 /* ---------- DOM 演出 ---------- */
 const fxLayer = $('fx');
-function cutin(text, cls, { dur = 1400, sub = '', small = false, gloss = null, ghost = false, color = null, huge = false } = {}) {
+function cutin(text, cls, { dur = 1400, sub = '', small = false, gloss = null, ghost = false, color = null, huge = false, big = false } = {}) {
   const el = document.createElement('div');
-  el.className = `cutin ${cls}${small ? ' small' : ''}${huge ? ' huge' : ''}`;
+  el.className = `cutin ${cls}${small ? ' small' : ''}${huge ? ' huge' : ''}${big ? ' big' : ''}`;
   if (color) {
     const c = new THREE.Color(color), hi = `#${c.clone().lerp(new THREE.Color('#fff'), 0.35).getHexString()}`, lo = `#${c.clone().multiplyScalar(0.45).getHexString()}`;
     el.style.setProperty('--band', `linear-gradient(180deg, ${hi}, ${color} 50%, ${lo})`);
@@ -2289,7 +2292,7 @@ async function runReach(plan, mode, entryIdx, landAngle, prelude, winner) {
     stepsN = Math.max(heats.length, leads.length);
   }
   showReach(at(0), 1600, false);
-  if (plan.gekiatsu) setTimeout(() => cutin('激熱', 't-red', { dur: 1150, small: true, gloss: 'red' }), 1650);
+  if (plan.gekiatsu) setTimeout(() => cutin('激熱', 't-red', { dur: 1300, gloss: 'red', big: true }), 1650);
 
   // リーチ中: 宝石の変化と、帯の変化(熱さの昇格・指す人の寝返り)
   const during = (async () => {
