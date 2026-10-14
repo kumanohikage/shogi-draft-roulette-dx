@@ -1668,7 +1668,7 @@ function evalHide() { $('evalbar').classList.remove('show'); document.body.class
 function evalSignal(lead, r, pulse = true) {
   const n = evalSt.L.length;
   if (!n || evalSt.mate >= 0) return;
-  if (r >= 1) return evalMate(lead);
+  r = Math.min(r, 0.99);   // 確定のリーチでも「まだ1%はあるかも」と見せる(詰みは全回転だけ)
   evalSt.L = evalSt.L.map((v, i) => v * (i === lead ? r : (1 - r) / (n - 1)));
   renderEval(pulse);
 }
@@ -1679,7 +1679,16 @@ function evalMate(lead) { evalSt.mate = lead; evalSt.L = evalSt.L.map((_, i) => 
 function renderEval(pulse) {
   const bar = $('evalbar');
   const sum = evalSt.L.reduce((a, b) => a + b, 0) || 1;
-  const P = evalSt.L.map((v) => v / sum);
+  let P = evalSt.L.map((v) => v / sum);
+  // 決着前は評価値 +2000 を上限にする(1位と2位の比を exp(2000/600) までに抑えて、バーもそれに合わせる)
+  if (evalSt.mate < 0) {
+    const K = Math.exp(2000 / 600);
+    const o = P.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
+    if (o[1] && o[0][0] > K * o[1][0]) {
+      P = P.slice(); P[o[0][1]] = K * o[1][0];
+      const t = P.reduce((a, b) => a + b, 0); P = P.map((v) => v / t);
+    }
+  }
   const order = P.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
   const [p1, top] = order[0], p2 = order[1] ? order[1][0] : 0;
   const track = bar.querySelector('.eb-track');
@@ -1693,7 +1702,7 @@ function renderEval(pulse) {
   if (evalSt.won) { w = '勝ち'; c = 'win'; }
   else if (evalSt.mate >= 0) { w = '詰み'; c = 'mate'; }
   else {
-    v = Math.round(600 * Math.log(Math.max(p1, 1e-9) / Math.max(p2, 1e-9)) / 10) * 10;
+    v = Math.min(2000, Math.round(600 * Math.log(Math.max(p1, 1e-9) / Math.max(p2, 1e-9)) / 10) * 10);
     // 目安: 互角 〜+400 / 有利 +400〜 / 優勢 +1000〜 / 大優勢 +2000〜
     if (v >= 2000) { w = '大優勢'; c = 'w4'; } else if (v >= 1000) { w = '優勢'; c = 'w3'; } else if (v >= 400) { w = '有利'; c = 'w2'; }
   }
