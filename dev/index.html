@@ -230,7 +230,7 @@
   .cutin .main.gl { background: none; -webkit-text-stroke: 0; filter: none; }
   .cutin .main.gl .glw { width: min(calc(86 * var(--vw)), calc(var(--ar, 4) * 26 * var(--vh))); }
   /* 全回転などの特別なカットインは、光と闇と同じく画面いっぱいの大きさで */
-  .cutin.huge .main.gl .glw { width: calc(72 * var(--vw)); }
+  .cutin.huge .main.gl .glw { width: min(calc(54 * var(--vw)), calc(var(--ar, 4) * 40 * var(--vh))); }
   /* 短い言葉(激熱など)を大きく見せる */
   .cutin.big .main.gl .glw { width: min(calc(86 * var(--vw)), calc(var(--ar, 4) * 40 * var(--vh))); }
   .cutin.small .main.gl .glw { width: min(calc(60 * var(--vw)), calc(var(--ar, 4) * 13 * var(--vh))); }
@@ -275,7 +275,7 @@
   body.vertical .cutin .main { font-size: calc(19 * var(--vw)); }
   body.vertical .cutin.small .main { font-size: calc(15 * var(--vw)); }
   body.vertical .cutin .main.gl .glw { width: min(calc(96 * var(--vw)), calc(var(--ar, 4) * 24 * var(--vw))); }
-  body.vertical .cutin.huge .main.gl .glw { width: calc(96 * var(--vw)); }
+  body.vertical .cutin.huge .main.gl .glw { width: calc(86 * var(--vw)); }
   body.vertical .cutin.big .main.gl .glw { width: min(calc(96 * var(--vw)), calc(var(--ar, 4) * 36 * var(--vw))); }
   body.vertical .cutin.small .main.gl .glw { width: min(calc(90 * var(--vw)), calc(var(--ar, 4) * 17 * var(--vw))); }
   body.vertical .cutin .band { height: calc(24 * var(--vh)); margin-top: calc(-12 * var(--vh)); }
@@ -945,7 +945,7 @@ const GLOSS = {
 const glossCache = new Map();
 function renderGlossy(text, scheme) {
   const g = GLOSS[scheme] || GLOSS.gold;
-  const fs = 180, k = fs / 160, n = [...text].length;
+  const fs = 280, k = fs / 160, n = [...text].length;   // 大きく表示しても荒れない解像度
   const W = Math.round(n * fs + 120 * k), H = Math.round(fs * 1.62);
   const x = W / 2, y = Math.round(fs * 1.12);
   const top = y - fs * 0.9, bot = y + fs * 0.12;
@@ -965,8 +965,9 @@ function renderGlossy(text, scheme) {
     if (masks[w]) return masks[w];
     const [c2, x2] = layer();
     x2.fillStyle = '#fff';
-    const r = w / 2, steps = 28;
-    for (const rr of [r, r * 0.7, r * 0.4]) for (let i = 0; i < steps; i++) {
+    // 円周上に隙間なく並べる(間隔が空くと縁がギザギザになる)
+    const r = w / 2;
+    for (const rr of [r, r * 0.66, r * 0.33]) for (let i = 0, steps = Math.max(16, Math.ceil(TAU * rr / 1.2)); i < steps; i++) {
       const a = (i / steps) * TAU;
       x2.fillText(text, x + Math.cos(a) * rr, y + Math.sin(a) * rr);
     }
@@ -983,7 +984,7 @@ function renderGlossy(text, scheme) {
 
   // 厚み(押し出し)
   const extC = colored(40 * k, g.ext);
-  for (let i = 10; i >= 1; i--) ctx.drawImage(extC, 0, i * 2.6 * k);
+  for (let i = 26; i >= 1; i--) ctx.drawImage(extC, 0, i * 1 * k);   // 細かく重ねて段差を出さない
   // 外側の黒縁 → メッキの縁
   ctx.drawImage(colored(40 * k, '#0a0300'), 0, 0);
   ctx.drawImage(colored(30 * k, (cx) => vgrad(cx, g.rim)), 0, 0);
@@ -1044,7 +1045,7 @@ function renderGlossy(text, scheme) {
 }
 // Webフォントは文字ごとに分割して配信されるので、canvas で使う文字がまだ届いていないことがある。
 // 届いていないときは代わりのフォントで描くだけにして覚えず、文字を取り寄せる(次からは正しいフォントで描く)
-const GLOSS_FONT = `180px 'Dela Gothic One'`;
+const GLOSS_FONT = `280px 'Dela Gothic One'`;
 function getGlossy(text, scheme) {
   const key = `${text}|${scheme}`;
   if (glossCache.has(key)) return glossCache.get(key);
