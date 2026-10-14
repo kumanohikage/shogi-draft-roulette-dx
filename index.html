@@ -997,7 +997,7 @@ function glossy(text, scheme) {
 // 使う文字は決まっているので、起動後に少しずつ先に作っておく
 function warmGlossy() {
   const jobs = [['抽選リーチ', 'red'], ['抽選リーチ', 'gold'], ['抽選リーチ', 'rainbow'],
-    ['激熱', 'red'], ['交渉権確定！', 'red'], ['全回転', 'rainbow'], ['待った!!', 'rainbow'], ['再抽選!!', 'rainbow'], ...draft.leaders.map((n) => [n, 'gold']), [draft.pick, 'gold'],
+    ['激熱', 'red'], ['交渉権確定！', 'red'], ['全回転', 'rainbow'], ['大逆転!!', 'rainbow'], ['再抽選!!', 'rainbow'], ...draft.leaders.map((n) => [n, 'gold']), [draft.pick, 'gold'],
     ['ボタンを押せ!!', 'red'], ['ボタンを押せ!!', 'gold'], ['ボタンを押せ!!', 'rainbow'], ['ボタンを連打!!', 'gold'], ['ボタンを連打!!', 'rainbow']];
   // 最初のカットインだけ 0.1 秒ほど止まる(描画の初回準備)ので、見えないカットインを先に1回出しておく
   const next = () => { const j = jobs.shift(); if (!j) { cutin('抽選リーチ', 't-gold', { dur: 900, gloss: 'gold', ghost: true }); return; } getGlossy(...j); setTimeout(next, 60); };
@@ -1908,7 +1908,7 @@ async function startSpin() {
   evalReset(n);
   // 止まるマス: 勝者のマスのどれか
   const landIdx = winner + n * Math.floor(Math.random() * (total / n));
-  // 「待った!!」は、止まりかける人(勝者の1つ手前のマス = 勝者の前のリーダー)を評価値の上で優勢に見せておく(ブラフ)。虹は確定のまま
+  // 「大逆転!!」は、止まりかける人(勝者の1つ手前のマス = 勝者の前のリーダー)を評価値の上で優勢に見せておく(ブラフ)。虹は確定のまま
   const fake = mod(winner - 1, n);
   if (plan.donden) {
     plan.gemLead = fake;
@@ -1921,7 +1921,7 @@ async function startSpin() {
   const reachLead = plan.leads.length ? plan.leads[plan.leads.length - 1] : winner;
   let passK = mod(winner - reachLead, n);
   if (passK === 0 && n <= 4 && chance(0.15)) passK = n;   // たまに一周して同じ人へ戻る
-  plan.donden = plan.donden && passK >= 1;                // 「待った!!」は手前のマス(別の人)を経由できるときだけ
+  plan.donden = plan.donden && passK >= 1;                // 「大逆転!!」は手前のマス(別の人)を経由できるときだけ
   if (passK === 0) plan.pattern = 'stay';
   else if (passK >= 2) plan.pattern = 'pass';
   plan.passK = passK;
@@ -2298,16 +2298,16 @@ async function runReach(plan, mode, entryIdx, landAngle, prelude, winner) {
   const target = phiB + (plan.passK - 1 + landFrac) * arc;
 
   if (plan.donden) {
-    // 止まる → すぐ「待った!!」 → 動いて別の人へ
+    // 止まる → すぐ「大逆転!!」 → 動いて別の人へ
     const fake = target - landFrac * arc - rand(0.12, 0.4) * arc;   // ひとつ手前(別の人)のマス
     await play([{ dur: Math.min(5, 1.4 + 0.8 * Math.max(0, plan.passK - 1)), p0: phiHold, p1: fake, ease: E.inOut3 }]);
     sound.stopThud();
-    // 止まった…と思った瞬間に「待った!!」
-    await sleep(450);
-    sound.gata(); flash('#fff', 0.5, 1); fx.shake = 1.5;
-    cutin('待った!!', 't-rainbow', { dur: 1200, gloss: 'rainbow' });
-    await sleep(350);
-    await play([{ dur: 0.9, p0: fake, p1: target, ease: E.outCubic }]);
+    // 止まった…と思った瞬間に「大逆転!!」と同時にスッと動く(溜めない)
+    await sleep(320);
+    sound.upgrade(); flash('#fff', 0.35, 1); fx.shake = 1.2;
+    cutin('大逆転!!', 't-rainbow', { dur: 1200, gloss: 'rainbow' });
+    await play([{ dur: 0.38, p0: fake, p1: target, ease: E.outCubic }]);
+    await sleep(650);   // 「大逆転!!」を読ませてから結果へ
   } else if (plan.pattern === 'stay') {
     // 境目へじわじわ迫って…そのまま止まる
     await play([{ dur: 2.2, p0: phiHold, p1: target, ease: E.outCubic }]);
@@ -2940,7 +2940,7 @@ document.addEventListener('touchend', (e) => {
 (async () => {
   try {
     await Promise.race([
-      Promise.all([document.fonts.load(`100px 'Dela Gothic One'`, '抽選リーチ激熱交渉権確定！全回転再振り駒と×12345ボタンを押せ連打!待った…' + draft.leaders.join('') + draft.pick), document.fonts.load(`900 100px 'Noto Sans JP'`, '王飛角金銀桂香歩龍馬全圭杏と')]),
+      Promise.all([document.fonts.load(`100px 'Dela Gothic One'`, '抽選リーチ激熱交渉権確定！全回転再振り駒と×12345ボタンを押せ連打!大逆転' + draft.leaders.join('') + draft.pick), document.fonts.load(`900 100px 'Noto Sans JP'`, '王飛角金銀桂香歩龍馬全圭杏と')]),
       sleep(2500),
     ]);
   } catch (_) { /* フォント無しでも続行 */ }
