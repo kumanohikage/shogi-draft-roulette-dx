@@ -146,13 +146,13 @@
     font-family: var(--heavy); line-height: 1.05; letter-spacing: .04em; white-space: nowrap;
     font-size: min(calc(15 * var(--vw)), calc(21 * var(--vh)));
     background: var(--txt); -webkit-background-clip: text; background-clip: text; color: transparent;
-    -webkit-text-stroke: 3px rgba(0,0,0,.55);
-    filter: drop-shadow(0 0 18px var(--glow)) drop-shadow(0 6px 0 rgba(0,0,0,.5));
+    /* 縁取りは -webkit-text-stroke ではなく影の重ねで作る(iPhone Safari で角がトゲトゲにならないように) */
+    filter: drop-shadow(2px 0 0 rgba(0,0,0,.6)) drop-shadow(-2px 0 0 rgba(0,0,0,.6)) drop-shadow(0 2px 0 rgba(0,0,0,.6)) drop-shadow(0 -2px 0 rgba(0,0,0,.6)) drop-shadow(0 0 18px var(--glow)) drop-shadow(0 6px 0 rgba(0,0,0,.5));
   }
-  .cutin.small .main { font-size: min(calc(8 * var(--vw)), calc(11 * var(--vh))); -webkit-text-stroke: 2px rgba(0,0,0,.55); }
+  .cutin.small .main { font-size: min(calc(8 * var(--vw)), calc(11 * var(--vh))); }
   .cutin .sub {
     font-family: var(--heavy); font-size: min(calc(6 * var(--vw)), calc(8 * var(--vh))); color: #fff; margin-top: .2em;
-    -webkit-text-stroke: 2px rgba(0,0,0,.6); filter: drop-shadow(0 0 12px var(--glow));
+    filter: drop-shadow(2px 0 0 rgba(0,0,0,.7)) drop-shadow(-2px 0 0 rgba(0,0,0,.7)) drop-shadow(0 2px 0 rgba(0,0,0,.7)) drop-shadow(0 -2px 0 rgba(0,0,0,.7)) drop-shadow(0 0 12px var(--glow));
   }
   @keyframes band {
     0% { transform: skewY(-5deg) scaleY(0); opacity: 1; }
@@ -230,8 +230,8 @@
   .glw .shine i { position: absolute; top: 0; bottom: 0; left: 0; width: 22%; background: linear-gradient(105deg, transparent, rgba(255,255,255,.95) 50%, transparent); animation: shineMove 1.3s linear infinite; }
   @keyframes shineMove { from { transform: translateX(-110%); } to { transform: translateX(470%); } }
   .cutin .main.gl { background: none; -webkit-text-stroke: 0; filter: none; }
-  .cutin .main.gl .glw { width: min(calc(86 * var(--vw)), calc(118 * var(--vh))); }
-  .cutin.small .main.gl .glw { width: min(calc(40 * var(--vw)), calc(56 * var(--vh))); }
+  .cutin .main.gl .glw { width: min(calc(86 * var(--vw)), calc(var(--ar, 4) * 26 * var(--vh))); }
+  .cutin.small .main.gl .glw { width: min(calc(60 * var(--vw)), calc(var(--ar, 4) * 13 * var(--vh))); }
   .cutin .main.gl .glw canvas { filter: drop-shadow(0 0 22px var(--glow)); }
   #result-text.gl, #result.end #result-text.gl, body.mode-dark #result.end #result-text.gl { background: none; -webkit-text-stroke: 0; filter: none; }
   #result-text.gl .glw { width: min(calc(92 * var(--vw)), calc(150 * var(--vh))); }
@@ -272,8 +272,8 @@
   /* 縦では文字を大きく(スマホで小さくならないように) */
   body.vertical .cutin .main { font-size: calc(19 * var(--vw)); }
   body.vertical .cutin.small .main { font-size: calc(15 * var(--vw)); }
-  body.vertical .cutin .main.gl .glw { width: calc(96 * var(--vw)); }
-  body.vertical .cutin.small .main.gl .glw { width: calc(70 * var(--vw)); }
+  body.vertical .cutin .main.gl .glw { width: min(calc(96 * var(--vw)), calc(var(--ar, 4) * 24 * var(--vw))); }
+  body.vertical .cutin.small .main.gl .glw { width: min(calc(90 * var(--vw)), calc(var(--ar, 4) * 17 * var(--vw))); }
   body.vertical .cutin .band { height: calc(24 * var(--vh)); margin-top: calc(-12 * var(--vh)); }
   body.vertical .cutin.small .band { height: calc(14 * var(--vh)); margin-top: calc(-7 * var(--vh)); }
   body.vertical #result-text.gl .glw { width: calc(96 * var(--vw)); }
@@ -341,10 +341,11 @@
   #push.rainbow .pdome b { animation: hue 1.2s linear infinite; }
   #push .pdome b {
     font: normal 72px var(--heavy); color: #fff; letter-spacing: .02em; margin-top: 6px;
-    -webkit-text-stroke: 3px rgba(60,0,0,.7); text-shadow: 0 4px 0 rgba(0,0,0,.35), 0 0 18px rgba(255,255,255,.6);
+    --oc: rgba(60,0,0,.75);
+    text-shadow: 3px 0 0 var(--oc), -3px 0 0 var(--oc), 0 3px 0 var(--oc), 0 -3px 0 var(--oc), 2px 2px 0 var(--oc), -2px 2px 0 var(--oc), 2px -2px 0 var(--oc), -2px -2px 0 var(--oc), 0 6px 0 rgba(0,0,0,.35), 0 0 18px rgba(255,255,255,.6);
   }
-  #push.gold .pdome b { -webkit-text-stroke-color: rgba(90,50,0,.8); }
-  #push.zebra .pdome b, #push.rainbow .pdome b { -webkit-text-stroke-color: #000; }
+  #push.gold .pdome b { --oc: rgba(90,50,0,.8); }
+  #push.zebra .pdome b, #push.rainbow .pdome b { --oc: #000; }
   /* 押した瞬間: 沈む → 光る */
   #push.pressed .pbtn { animation: none; transform: perspective(900px) rotateX(32deg) translateY(14px) scale(.94); transition: transform .06s; }
   #push.pressed .pdome { filter: brightness(1.9); }
@@ -390,16 +391,20 @@
   /* 結果(交渉権確定) */
   #result-text.draft { display: flex; flex-direction: column; align-items: center; gap: calc(1 * var(--vh)); }
   #result-text.draft .r-photo { width: calc(16 * var(--vh)); height: calc(16 * var(--vh)); border-radius: 50%; background-size: cover; background-position: center; border: 6px solid #ffd24a; box-shadow: 0 0 40px #ffb000; }
-  #result-text.draft .r-leader .glw { width: min(calc(80 * var(--vw)), calc(110 * var(--vh))); }
-  #result-text.draft .r-kaku .glw { width: min(calc(70 * var(--vw)), calc(95 * var(--vh))); }
+  #result-text.draft .r-leader .glw { --lw: min(calc(80 * var(--vw)), calc(var(--ar, 4) * 25 * var(--vh))); width: var(--lw); }
+  #result-text.draft .r-kaku .glw { --kw: min(calc(70 * var(--vw)), calc(var(--ar, 4) * 22 * var(--vh))); width: var(--kw); }
+  body.vertical #result-text.draft .r-leader .glw { --lw: min(calc(94 * var(--vw)), calc(var(--ar, 4) * 23 * var(--vw))); }
+  body.vertical #result-text.draft .r-kaku .glw { --kw: min(calc(90 * var(--vw)), calc(var(--ar, 4) * 20 * var(--vw))); }
   #result-text.draft .r-pick { font: 900 calc(3.2 * var(--vh)) 'Noto Sans JP', sans-serif; color: #fff; text-shadow: 0 2px 6px #000, 0 0 12px rgba(255,200,80,.8); -webkit-text-stroke: 0; }
   #result-text.draft .glw canvas { filter: drop-shadow(0 0 24px rgba(255,150,0,.6)); }
   /* つるつる文字の画像は上下に余白があるので、行同士を重ねて詰める */
   #result-text.draft { gap: 0; }
   #result-text.draft .r-photo { position: relative; z-index: 1; }
   #result-text.draft .r-pick { margin-top: calc(0.6 * var(--vh)); position: relative; z-index: 1; }
-  #result-text.draft .r-leader { margin-top: calc(-2 * var(--vh)); }
-  #result-text.draft .r-kaku { margin-top: calc(-6 * var(--vh)); }
+  /* つるつる文字の上下の余白ぶんだけ重ねる(余白は文字の高さに比例するので、縦横どちらでも同じ見え方になる) */
+  #result-text.draft .r-leader { margin-top: calc(-1 * var(--vh)); }
+  #result-text.draft .r-leader .glw { margin-bottom: calc(-0.17 * var(--lw) / var(--ar, 4)); }
+  #result-text.draft .r-kaku .glw { margin-top: calc(-0.12 * var(--kw) / var(--ar, 4)); }
   .cutin .main.gl + .sub { margin-top: -0.75em; position: relative; }
 
   /* 評価値バー(将棋中継の形勢バー風) */
@@ -409,6 +414,34 @@
     opacity: 0; transition: opacity .4s; pointer-events: none; font-family: 'Noto Sans JP', sans-serif;
   }
   body.vertical #evalbar { width: calc(88 * var(--vw)); }
+  body.safe #fx, body.safe #result { bottom: calc(25 * var(--vh)); height: auto; }
+  body.safe #result .rbg { bottom: calc(-25 * var(--vh)); }
+  body.safe #steps { top: calc(37.5 * var(--vh)); }
+  body.vertical #btn-spin { bottom: 60px; font-size: 64px; padding: 26px 120px; border-width: 5px; }
+  body.vertical #btn-spin:active { transform: translateX(-50%) scale(.95); }
+  body.vertical #hint { bottom: 30px; font-size: 14px; }
+  body.vertical #push { bottom: 200px; }
+  body.safe #btn-spin { bottom: calc(25 * var(--vh) + 8px); }
+  body.safe #hint { bottom: calc(25 * var(--vh) - 22px); }
+  body.safe #push { bottom: calc(25 * var(--vh) + 10px); }
+  /* スマホ・タブレット(タッチ操作): 縮みすぎる UI を読める大きさに戻し、配信用の部品は隠す */
+  body.touch header, body.touch #matchup { zoom: var(--uiz, 1); }
+  body.touch:not(.vertical) #btn-spin { zoom: var(--uiz, 1); }
+  body.touch #btn-greenscreen, body.touch #btn-win-h, body.touch #btn-win-v, body.touch #btn-hide, body.touch #hint { display: none; }
+  body.touch header { flex-wrap: nowrap; }
+  body.touch #app-title { font-size: 14px; padding: 5px 10px; white-space: nowrap; }
+  body.touch #matchup { top: 52px; }
+  body.touch:not(.vertical) #matchup { top: 12px; }
+  /* スマホ(タッチ): 評価値の文字とバーを読める大きさに */
+  body.touch #evalbar { padding: calc(6px * var(--uiz)) calc(12px * var(--uiz)) calc(9px * var(--uiz)); border-radius: calc(12px * var(--uiz)); }
+  body.touch #evalbar .eb-name { font-size: calc(15px * var(--uiz)); }
+  body.touch #evalbar .eb-val { font-size: calc(19px * var(--uiz)); }
+  body.touch #evalbar .eb-word { font-size: calc(12px * var(--uiz)); }
+  body.touch #evalbar .eb-track { height: calc(12px * var(--uiz)); }
+  /* 縦画面では駒を大きく(8枚並んでも収まる幅で) */
+  body.vertical #steps.many .koma { --s: calc(11 * var(--vw)); }
+  body.vertical #steps.many .komaw.big .koma { --s: calc(14 * var(--vw)); }
+  body.vertical #steps { gap: calc(0.6 * var(--vw)); }
   #evalbar.show { opacity: 1; }
   #evalbar .eb-head { display: flex; align-items: baseline; justify-content: center; gap: 12px; color: #fff; white-space: nowrap; overflow: hidden; }
   #evalbar .eb-name { font: 900 17px 'Noto Sans JP', sans-serif; text-shadow: 0 1px 3px #000; overflow: hidden; text-overflow: ellipsis; }
@@ -433,6 +466,7 @@
   #perftip button { position: absolute; top: 6px; right: 8px; background: none; border: 0; color: #ccc; font-size: 14px; cursor: pointer; }
   body.ui-hidden #perftip, body.spinning #perftip { display: none; }
 
+  #safe-probe { position: fixed; bottom: 0; height: 0; padding-bottom: env(safe-area-inset-bottom, 0px); visibility: hidden; pointer-events: none; }
   #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: #fff; font: 700 16px sans-serif; z-index: 100; background: #000; }
   #loading.err { color: #fca5a5; padding: 24px; text-align: center; line-height: 1.7; }
 </style>
@@ -949,6 +983,8 @@ function glossy(text, scheme) {
   const gl = getGlossy(text, scheme);
   const wrap = document.createElement('div');
   wrap.className = 'glw';
+  // 縦横比(文字数で変わる)。CSS で「文字の高さ基準・長い名前だけ横幅に収める」計算に使う
+  wrap.style.setProperty('--ar', (gl.W / gl.H).toFixed(3));
   const c = makeCanvas(gl.W, gl.H);
   c.getContext('2d').drawImage(gl.canvas, 0, 0);
   const sh = document.createElement('div');
@@ -1759,7 +1795,7 @@ function renderEval(pulse) {
   const even = evalSt.mate < 0 && v <= 0;
   name.textContent = even ? '形勢' : draft.leaders[top];
   name.style.color = even ? '#fff' : new THREE.Color(leaderColor(top)).lerp(new THREE.Color('#fff'), 0.35).getStyle();
-  val.textContent = evalSt.won ? '+3000' : evalSt.mate >= 0 ? '' : even ? '±0' : `+${v}`;
+  val.textContent = evalSt.mate >= 0 ? '+3000' : even ? '±0' : `+${v}`;
   word.textContent = w; word.className = `eb-word ${c}`;
   // 針の宝石 = 今いちばん評価値が高い人の色(互角なら無色)。入れ替わったら光る
   const gk = even ? 'none' : `L${top}`;
