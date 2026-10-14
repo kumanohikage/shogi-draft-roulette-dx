@@ -777,11 +777,11 @@ const HEAT_ORDER = ['normal', 'gold', 'zebra', 'rainbow'];
 const REACH_REL = { normal: 0.7, gold: 0.8, zebra: 0.9, rainbow: 1 };
 const SIGN_REL = 0.6;
 const PUSH_RATE = { normal: 0.2, gold: 0.5, zebra: 0.7, rainbow: 1 };   // PUSH は控えめ(押すのは主催者なので)
-// 全回転: 回すほど出やすくなり、出たら元に戻る(k 回目 = 2% × k、最大 40%)。10回のうちに約7割で1回は出る
+// 全回転: 回すほど出やすくなり、出たら元に戻る(k 回目 = 5% × k、最大 60%)。だいたい5回に1回
 const ZENKAI_KEY = 'draftZenkaiCount';
 let zenkaiCount = 0;
 try { zenkaiCount = Math.max(0, parseInt(localStorage.getItem(ZENKAI_KEY) || '0', 10) || 0); } catch (_) { /* 保存できない環境でも動く */ }
-function zenkaiRate() { return Math.min(0.4, 0.02 * (zenkaiCount + 1)); }
+function zenkaiRate() { return Math.min(0.6, 0.05 * (zenkaiCount + 1)); }
 function bumpZenkai(hit) {
   zenkaiCount = hit ? 0 : zenkaiCount + 1;
   try { localStorage.setItem(ZENKAI_KEY, String(zenkaiCount)); } catch (_) { /* 同上 */ }
